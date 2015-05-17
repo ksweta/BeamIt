@@ -7,7 +7,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -19,13 +18,13 @@ public class ContactNamesRecyclerViewAdapter extends RecyclerView.Adapter<Contac
     private Context mContext;
     List<String> mContactNames;
 
-    public ContactNamesRecyclerViewAdapter(Context context) {
+    public ContactNamesRecyclerViewAdapter(Context context, List<String> contactNames) {
         mContext = context;
+        mContactNames = contactNames;
         randomizeCatNames();
     }
 
     public void randomizeCatNames() {
-        mContactNames = Arrays.asList(getCatNamesResource());
         Collections.shuffle(mContactNames);
     }
 
@@ -38,9 +37,6 @@ public class ContactNamesRecyclerViewAdapter extends RecyclerView.Adapter<Contac
         }
     }
 
-    private String[] getCatNamesResource() {
-        return mContext.getResources().getStringArray(R.array.contact_names);
-    }
 
     @Override
     public ContactNamesViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
