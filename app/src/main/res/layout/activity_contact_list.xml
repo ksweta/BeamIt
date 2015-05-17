@@ -19,8 +19,6 @@
 
     </android.support.v4.widget.SwipeRefreshLayout>
 
-    <include android:id="@+id/toolbar" layout="@layout/tool_bar"/>
-
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -37,5 +35,4 @@
             android:id="@+id/imageButton"
             android:layout_gravity="right|bottom" />
     </FrameLayout>
-
 </RelativeLayout>
