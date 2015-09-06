@@ -2,10 +2,21 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.contactsharing.beamit" >
 
+    <uses-permission android:name="android.permission.NFC" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE" />
+
+    <uses-feature
+        android:name="android.hardware.nfc"
+        android:required="true" />
+
+    <!--tutorial says to include android:minSdkVersion="16" but here its 21 , so not sure-->
     <uses-sdk
         android:minSdkVersion="21"
         android:targetSdkVersion="21" />
 
+
+    <!--<uses-feature android:name="android.hardware.nfc" android:required="false" />-->
 
     <application
         android:allowBackup="true"
@@ -33,6 +44,15 @@
         <activity
             android:name=".ContactListActivity"
             android:label="@string/title_activity_contact_list" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".SendActivity"
+            android:label="@string/title_activity_send" >
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
