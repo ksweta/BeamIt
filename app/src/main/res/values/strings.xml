@@ -11,6 +11,7 @@
     <string name="title_activity_sign_up">SignUpActivity</string>
     <string name="title_activity_contact_list">ContactListActivity</string>
     <string name="title_activity_send">SendActivity</string>
+    <string name="title_activity_display">DisplayCardActivity</string>
     <string-array name="contact_names">
         <item>George</item>
         <item>Zubin</item>

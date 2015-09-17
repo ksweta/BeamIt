@@ -101,6 +101,7 @@ public class ContactListActivity extends ActionBarActivity
 
             int nameColIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
             int phoneColIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+
             cursor.moveToFirst();
             String name = cursor.getString(nameColIndex);
             String phoneNumber = cursor.getString(phoneColIndex);
@@ -108,7 +109,7 @@ public class ContactListActivity extends ActionBarActivity
             cursor.close();
 
             if (name != null && !name.isEmpty()) {
-                saveNewContact(name, phoneNumber);
+                saveNewContact(name, phoneNumber, ""); //TODO  for email
                 Log.d(TAG, "name : " + name);
 
             }
@@ -152,9 +153,10 @@ public class ContactListActivity extends ActionBarActivity
      * @param name  Contact name.
 
      */
-    private void saveNewContact(String name, String phoneNumber) {
+    private void saveNewContact(String name, String phoneNumber, String email) {
         ContactDetails contact = new ContactDetails(name,
                 phoneNumber,
+                email,  //TODO  for email
                 false,
                 new Date());
 

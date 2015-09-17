@@ -33,7 +33,7 @@ public class SendActivity extends Activity {
     @Override
     public void onCreate(Bundle savedState) {
         Gson gson = new Gson();
-        ContactDetails contactDetails = new ContactDetails("kumari", "510387", true, new Date());
+        ContactDetails contactDetails = new ContactDetails("kumari", "510387", "ksweta@mail.sfsu.edu", true, new Date());
 
         //convert java object to JSON format
         String json = gson.toJson(contactDetails);
@@ -55,8 +55,8 @@ public class SendActivity extends Activity {
         // create an NDEF message with two records of plain text type
         mNdefMessage = new NdefMessage(
                 new NdefRecord[] {
-                        createNewTextRecord(json.toString(), Locale.ENGLISH, true),
-                        createNewTextRecord("This is my email id: ksweta@", Locale.ENGLISH, true) });
+                        createNewTextRecord(json.toString(), Locale.ENGLISH, true) } );
+                        //createNewTextRecord("This is my email id: ksweta@", Locale.ENGLISH, true) });
     }
 
     public static NdefRecord createNewTextRecord(String text, Locale locale, boolean encodeInUtf8) {

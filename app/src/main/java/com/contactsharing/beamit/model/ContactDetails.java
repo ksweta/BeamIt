@@ -16,6 +16,9 @@ public class ContactDetails {
     //Recipient Phone number.
     private String phone;
 
+    //Recipient email id.
+    private String email;
+
     //'true' if the phone number is registered with server
     // Otherwise 'false'
     private Boolean registered;
@@ -28,21 +31,24 @@ public class ContactDetails {
     }
     public ContactDetails(String name,
                           String phone,
+                          String email,
                           Boolean registered,
                           Date syncDate) {
         //Passing ID as zero, this value will be ignored later.
-        this(0L, name, phone, registered, syncDate);
+        this(0L, name, phone, email, registered, syncDate);
     }
 
     public ContactDetails(Long id,
                           String name,
                           String phone,
+                          String email,
                           Boolean registered,
                           Date syncDate) {
         super();
         this.id = id;
         this.name = name;
         this.phone = phone;
+        this.email = email;
         this.registered = registered;
         this.syncDate = syncDate;
     }
@@ -70,6 +76,12 @@ public class ContactDetails {
     public void setPhone(String phone) {
         this.phone = phone;
     }
+
+    public String getEmail(){ return email ; }
+
+    public void setEmail(String email){
+         this.email = email;
+     }
 
     public Boolean getRegistered() {
         return registered;

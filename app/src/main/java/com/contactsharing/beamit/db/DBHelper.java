@@ -110,6 +110,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     ContactDetails contact = new ContactDetails(cursor.getLong(idColIndex),
                             cursor.getString(nameColIndex),
                             cursor.getString(phoneColIndex),
+                            "", //TODO  for email
                             cursor.getInt(registeredColIndex) == 1,
                             simpleDateFormat.parse(cursor.getString(syncDateIndex)));
 

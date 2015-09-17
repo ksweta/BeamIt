@@ -23,6 +23,7 @@ import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.contactsharing.beamit.model.ContactDetails;
 import com.google.gson.Gson;
 
 import org.json.JSONObject;
@@ -39,6 +40,8 @@ public class MainActivity extends ActionBarActivity {
     private PendingIntent mPendingIntent;
     private IntentFilter[] mIntentFilters;
     private String[][] mNFCTechLists;
+
+    public final static String EXTRA_MESSAGE = "com.contactsharing.beamit.ContactDeatils";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,7 +95,8 @@ public class MainActivity extends ActionBarActivity {
     public void onNewIntent(Intent intent) {
         String action = intent.getAction();
         Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-
+        Gson gson=new Gson();
+        String receivedString = "";
         String s = action + "\n\n" + tag.toString();
         String s1 = "UTF-8";
         String s2 = "UTF-16";
@@ -109,12 +113,14 @@ public class MainActivity extends ActionBarActivity {
                             byte[] payload = recs[j].getPayload();
                             String textEncoding = ((payload[0] & 0200) == 0) ?  s1 : s2;
                             int langCodeLen = payload[0] & 0077;
-                            String receivedString = new String(payload, langCodeLen + 1, payload.length - langCodeLen - 1,
+                            receivedString = new String(payload, langCodeLen + 1, payload.length - langCodeLen - 1,
                                                     textEncoding);
+                            Log.d(TAG, "receivedString: " + receivedString);
                             //received NDEF record is in text form. So converting it into JSON object
-                            JSONObject jsonObj = new JSONObject(receivedString);
-                            s += ("\n\nNdefMessage[" + i + "], NdefRecord[" + j + "]:\n\"" +
-                                    jsonObj + "\"");
+                            //JSONObject jsonObj = new JSONObject(receivedString);
+                            ContactDetails cd =  gson.fromJson(receivedString, ContactDetails.class);
+                            s += "Name: " + cd.getName() + ", Phone: "+ cd.getPhone() + ", email: " +
+                                    cd.getEmail();
                         }
                     }
                 }
@@ -122,7 +128,9 @@ public class MainActivity extends ActionBarActivity {
                 Log.e("TagDispatch", e.toString());
             }
         }
-
+        Intent displayIntent = new Intent(this, DisplayCardActivity.class);
+        displayIntent.putExtra(EXTRA_MESSAGE, receivedString );
+        startActivity(displayIntent);
         Log.d(TAG, s);
         Toast.makeText(this, s, Toast.LENGTH_LONG).show();
     }
