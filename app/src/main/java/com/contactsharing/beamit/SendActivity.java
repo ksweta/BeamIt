@@ -1,9 +1,11 @@
 package com.contactsharing.beamit;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
+import android.nfc.Tag;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -32,16 +34,35 @@ public class SendActivity extends Activity {
 
     @Override
     public void onCreate(Bundle savedState) {
+        TextView tv_name;
+        TextView tv_phone;
+        TextView tv_email;
+
         Gson gson = new Gson();
-        ContactDetails contactDetails = new ContactDetails("kumari", "510387", "ksweta@mail.sfsu.edu", true, new Date());
+
+        Intent intent = getIntent();
+        String jsonContact = intent.getStringExtra(ContactNamesRecyclerViewAdapter.EXTRA_MESSAGE);
+        ContactDetails cd =  gson.fromJson(jsonContact, ContactDetails.class);
+        String s = cd.toString();
+        Log.d("displaycard test: ", s);
+
+
 
         //convert java object to JSON format
-        String json = gson.toJson(contactDetails);
+        String json = gson.toJson(cd);
 
         Log.d(TAG, "Json string: " + json.toString());
         super.onCreate(savedState);
 
         setContentView(R.layout.activity_send);
+
+        tv_name =  (TextView) findViewById(R.id.send_tv_name_value);
+        tv_phone =  (TextView) findViewById(R.id.send_tv_phone_value);
+        tv_email =  (TextView) findViewById(R.id.send_tv_email_value);
+
+        tv_name.setText(cd.getName());
+        tv_phone.setText(cd.getPhone());
+        tv_email.setText(cd.getEmail());
 
 
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);

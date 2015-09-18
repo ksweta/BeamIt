@@ -41,7 +41,7 @@ public class MainActivity extends ActionBarActivity {
     private IntentFilter[] mIntentFilters;
     private String[][] mNFCTechLists;
 
-    public final static String EXTRA_MESSAGE = "com.contactsharing.beamit.ContactDeatils";
+    public final static String EXTRA_MESSAGE = "com.contactsharing.beamit.MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
