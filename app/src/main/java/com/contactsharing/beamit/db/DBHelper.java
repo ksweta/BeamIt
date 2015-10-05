@@ -13,6 +13,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.util.Log;
 
 import com.contactsharing.beamit.model.ContactDetails;
@@ -39,7 +40,7 @@ public class DBHelper extends SQLiteOpenHelper {
      */
     private SimpleDateFormat simpleDateFormat;
 
-    private static final String DATABASE_CREATE_CONTACT_TABLE = "CREATE TABLE "+ TABLE_NAME_CONTACTS +
+    private static final String DATABASE_CREATE_CONTACT_TABLE = "CREATE TABLE " + TABLE_NAME_CONTACTS +
             "(" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
             + COLUMN_NAME + " TEXT NOT NULL, "
             + COLUMN_PHONE + " TEXT NOT NULL, "
@@ -72,12 +73,12 @@ public class DBHelper extends SQLiteOpenHelper {
                 null,
                 getValues(contact));
         Log.d(TAG, "InsertData->result : " + result);
-        return result ;
+        return result;
     }
 
     public List<ContactDetails> readAllContacts() {
         //Get all columns from Contacts  table.
-        String[] allColumns = new String[] {DBHelper.COLUMN_ID,
+        String[] allColumns = new String[]{DBHelper.COLUMN_ID,
                 DBHelper.COLUMN_NAME,
                 DBHelper.COLUMN_PHONE,
                 DBHelper.COLUMN_REGISTERED,
@@ -91,7 +92,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 null,
                 null);
         List<ContactDetails> contactList = new LinkedList<ContactDetails>();
-        if(cursor != null) {
+        if (cursor != null) {
             //cursor.moveToFirst();
 
             // Get the index of the various columns. This helps to get
@@ -103,7 +104,7 @@ public class DBHelper extends SQLiteOpenHelper {
             int syncDateIndex = cursor.getColumnIndex(DBHelper.COLUMN_SYNC_DATE);
 
 
-            while(cursor.moveToNext()) {
+            while (cursor.moveToNext()) {
                 //simpleDateFormat.parse() throws exception, necessary to have try-catch block here.
                 try {
 
@@ -115,7 +116,7 @@ public class DBHelper extends SQLiteOpenHelper {
                             simpleDateFormat.parse(cursor.getString(syncDateIndex)));
 
                     contactList.add(contact);
-                } catch(Exception e) {
+                } catch (Exception e) {
                     Log.e(TAG, e.getMessage(), e);
                 }
             }
@@ -131,10 +132,10 @@ public class DBHelper extends SQLiteOpenHelper {
                 getValues(contact),
                 //Where clause
                 DBHelper.COLUMN_ID + "=?",
-                new String[] {contact.getId().toString()});
+                new String[]{contact.getId().toString()});
     }
 
-    public int deleteContact(ContactDetails contact){
+    public int deleteContact(ContactDetails contact) {
         return getWritableDatabase().delete(DBHelper.TABLE_NAME_CONTACTS,
                 DBHelper.COLUMN_ID + "=?",
                 new String[]{contact.getId().toString()});
@@ -142,11 +143,12 @@ public class DBHelper extends SQLiteOpenHelper {
 
     /**
      * This method check if the given phone number is already present in the contact list.
+     *
      * @param phone Contact's phone number.
      * @return returns true if the phone number is already present in database.
      */
     public boolean isContactPresent(String phone) {
-        String[] columns = new String[] {DBHelper.COLUMN_ID};
+        String[] columns = new String[]{DBHelper.COLUMN_ID};
         String[] selectionArgs = new String[]{phone};
         Cursor cursor = null;
         try {
@@ -159,7 +161,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     null,
                     null);
 
-            if(cursor == null) {
+            if (cursor == null) {
                 Log.e(TAG, "isContactPresent(): Serious problem, cursor is null");
             }
             if (cursor.getCount() > 0) {
@@ -169,23 +171,81 @@ public class DBHelper extends SQLiteOpenHelper {
                 return false;
             }
         } finally {
-            if(cursor != null) {
+            if (cursor != null) {
                 cursor.close();
             }
         }
     }
+
     /**
      * This is a helper method to convert ContactDetails object to ContentValues
      * This contentValues object is used in various CRUD methods.
+     *
      * @param contact
      * @return
      */
-    private ContentValues getValues(ContactDetails contact){
+    private ContentValues getValues(ContactDetails contact) {
         ContentValues values = new ContentValues();
         values.put(DBHelper.COLUMN_NAME, contact.getName());
         values.put(DBHelper.COLUMN_PHONE, contact.getPhone());
         values.put(DBHelper.COLUMN_REGISTERED, contact.getRegistered());
         values.put(DBHelper.COLUMN_SYNC_DATE, simpleDateFormat.format(contact.getSyncDate()));
         return values;
+    }
+
+
+    public List<ContactDetails> getNameMatches(String query) {
+        //Get all columns from Contacts  table.
+        String[] columns = new String[]{DBHelper.COLUMN_ID,
+                DBHelper.COLUMN_NAME,
+                DBHelper.COLUMN_PHONE,
+                DBHelper.COLUMN_REGISTERED,
+                DBHelper.COLUMN_SYNC_DATE};
+
+        String[] selectionArgs = new String[]{"%" + query + "%"};
+        //Cursor cursor = null;
+        Cursor cursor = getReadableDatabase().query(DBHelper.TABLE_NAME_CONTACTS,
+                columns,
+                DBHelper.COLUMN_NAME + " LIKE ?",
+                selectionArgs,
+                null,
+                null,
+                null);
+
+        List<ContactDetails> contactList = new LinkedList<ContactDetails>();
+        if (cursor != null) {
+            //cursor.moveToFirst();
+
+            // Get the index of the various columns. This helps to get
+            // the column value from the cursor object.
+            int idColIndex = cursor.getColumnIndex(DBHelper.COLUMN_ID);
+            int nameColIndex = cursor.getColumnIndex(DBHelper.COLUMN_NAME);
+            int phoneColIndex = cursor.getColumnIndex(DBHelper.COLUMN_PHONE);
+            int registeredColIndex = cursor.getColumnIndex(DBHelper.COLUMN_REGISTERED);
+            int syncDateIndex = cursor.getColumnIndex(DBHelper.COLUMN_SYNC_DATE);
+
+
+            while (cursor.moveToNext()) {
+                //simpleDateFormat.parse() throws exception, necessary to have try-catch block here.
+                try {
+
+                    ContactDetails contact = new ContactDetails(cursor.getLong(idColIndex),
+                            cursor.getString(nameColIndex),
+                            cursor.getString(phoneColIndex),
+                            "", //TODO  for email
+                            cursor.getInt(registeredColIndex) == 1,
+                            simpleDateFormat.parse(cursor.getString(syncDateIndex)));
+
+                    contactList.add(contact);
+                } catch (Exception e) {
+                    Log.e(TAG, e.getMessage(), e);
+                }
+            }
+
+            //Close the DB connection once work is done.
+            cursor.close();
+        }
+        return contactList;
+
     }
 }

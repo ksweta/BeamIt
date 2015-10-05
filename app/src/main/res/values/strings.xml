@@ -12,15 +12,9 @@
     <string name="title_activity_contact_list">ContactListActivity</string>
     <string name="title_activity_send">SendActivity</string>
     <string name="title_activity_display">DisplayCardActivity</string>
-    <string-array name="contact_names">
-        <item>George</item>
-        <item>Zubin</item>
-        <item>Carlos</item>
-        <item>Frank</item>
-        <item>Charles</item>
-        <item>Simon</item>
-        <item>Fezra</item>
-        <item>Henry</item>
-        <item>Schuster</item>
-    </string-array>
+    <string name="search_title">Search</string>
+    <string name="title_activity_test">TestActivity</string>
+    <string name="search_hint">Search contacts</string>
+    <string name="title_activity_search_results">SearchResultsActivity</string>
+
 </resources>

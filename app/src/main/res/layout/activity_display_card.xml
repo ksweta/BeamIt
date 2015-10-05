@@ -14,7 +14,7 @@
         android:layout_height="200dp"
 
         android:focusable="true"
-        card_view:cardBackgroundColor="@android:color/darker_gray"
+        card_view:cardBackgroundColor="#39c6A2"
         card_view:cardElevation="15dp"
         card_view:cardCornerRadius="20dp">
 

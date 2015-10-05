@@ -2,6 +2,8 @@ package com.contactsharing.beamit;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.SearchManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
@@ -15,6 +17,7 @@ import android.support.v7.internal.widget.AdapterViewCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
+import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -31,14 +34,14 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class ContactListActivity extends ActionBarActivity
-        implements DataSetChange{
+        implements DataSetChange {
     private static final String TAG = ContactListActivity.class.getSimpleName();
     private static final int CONTACT_PICKER_RESULT = 1503;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private RecyclerView mRecyclerView;
     private ContactNamesRecyclerViewAdapter mContactNamesRecyclerViewAdapter;
     ImageButton FAB;
-        private List<ContactDetails> mContacts;
+    private List<ContactDetails> mContacts;
     private DBHelper db;
 
     @Override
@@ -53,8 +56,8 @@ public class ContactListActivity extends ActionBarActivity
         mRecyclerView = (RecyclerView) findViewById(R.id.activity_main_recyclerview);
         final LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(layoutManager);
-       // mContacts = getContactNamesResource();
-        setupAdapter();
+        // mContacts = getContactNamesResource();
+        setupAdapter(mContacts);
 
 
         mSwipeRefreshLayout.setColorSchemeResources(R.color.orange, R.color.green, R.color.blue);
@@ -64,7 +67,7 @@ public class ContactListActivity extends ActionBarActivity
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        setupAdapter();
+                        setupAdapter(mContacts);
                         mSwipeRefreshLayout.setRefreshing(false);
                     }
                 }, 2500);
@@ -79,16 +82,17 @@ public class ContactListActivity extends ActionBarActivity
                 importContact();
             }
         });
+        handleIntent(getIntent());
     }
 
-    private void importContact(){
+    private void importContact() {
         //Import contact using contact picker
         Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
         intent.setType(ContactsContract.CommonDataKinds.Phone.CONTENT_TYPE);
         startActivityForResult(intent, CONTACT_PICKER_RESULT);
     }
 
-    private void importContactResult(Intent intent){
+    private void importContactResult(Intent intent) {
         Uri uri = intent.getData();
         Log.d(TAG, "Contact URI : " + uri.toString());
 
@@ -117,13 +121,12 @@ public class ContactListActivity extends ActionBarActivity
     }
 
 
-    private List<String> getContactNamesResource() {
-        return  new LinkedList(Arrays.asList(this.getResources().getStringArray(R.array.contact_names)));
-    }
+//    private List<String> getContactNamesResource() {
+//        //return  new LinkedList(Arrays.asList(this.getResources().getStringArray(R.array.contact_names)));
+//    }
 
-    private void setupAdapter() {
-        mContacts = db.readAllContacts();
-        mContactNamesRecyclerViewAdapter = new ContactNamesRecyclerViewAdapter(this, mContacts, this, db);
+    private void setupAdapter(List<ContactDetails> contacts) {
+        mContactNamesRecyclerViewAdapter = new ContactNamesRecyclerViewAdapter(this, contacts, this, db);
         mRecyclerView.setAdapter(mContactNamesRecyclerViewAdapter);
     }
 
@@ -150,8 +153,7 @@ public class ContactListActivity extends ActionBarActivity
     /**
      * This is a helper method to save the contact in contact list.
      *
-     * @param name  Contact name.
-
+     * @param name Contact name.
      */
     private void saveNewContact(String name, String phoneNumber, String email) {
         ContactDetails contact = new ContactDetails(name,
@@ -166,7 +168,7 @@ public class ContactListActivity extends ActionBarActivity
             //contactList and notify the adapter.
             contact.setId(conId);
             mContacts.add(contact);
-            setupAdapter();
+            setupAdapter(mContacts);
 
             //Notify user.
             Toast.makeText(this, "Contact added successfully", Toast.LENGTH_SHORT).show();
@@ -183,6 +185,14 @@ public class ContactListActivity extends ActionBarActivity
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.menu_contact_list, menu);
+
+        // Associate searchable configuration with the SearchView
+        SearchManager searchManager =
+                (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+        SearchView searchView =
+                (SearchView) menu.findItem(R.id.search).getActionView();
+        searchView.setSearchableInfo(
+                searchManager.getSearchableInfo(getComponentName()));
         return true;
     }
 
@@ -197,14 +207,37 @@ public class ContactListActivity extends ActionBarActivity
         if (id == R.id.action_settings) {
             return true;
         }
-
+//        if(id == R.id.search) {
+//            onSearchRequested();
+//            return true;
+//        }
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public void onDataSetChange() {
+        setupAdapter(mContacts);
 
-   @Override
-    public void onDataSetChange(){
-      setupAdapter();
-   }
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+
+        setIntent(intent);
+
+        handleIntent(intent);
+    }
+
+
+    private void handleIntent(Intent intent) {
+
+        if (Intent.ACTION_SEARCH.equals(intent.getAction())) {
+            String query = intent.getStringExtra(SearchManager.QUERY);
+            Log.d(TAG, "query: " + query);
+            mContacts = db.getNameMatches(query);
+            setupAdapter(mContacts);
+
+        }
+    }
 }
 

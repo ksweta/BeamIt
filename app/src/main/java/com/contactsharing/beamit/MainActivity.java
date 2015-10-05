@@ -229,9 +229,6 @@ public class MainActivity extends ActionBarActivity {
             case R.id.tv_sign_up:
                 intent = new Intent(this, SignUpActivity.class);
                 break;
-            case R.id.button1:
-                intent = new Intent(this, SendActivity.class);
-                break;
             default:
                 return;
         }
