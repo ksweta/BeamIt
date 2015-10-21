@@ -22,9 +22,9 @@ public class DisplayCardActivity extends Activity {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_display_card);
-        tv_name =  (TextView) findViewById(R.id.tv_name_value);
-        tv_phone =  (TextView) findViewById(R.id.tv_phone_value);
-        tv_email =  (TextView) findViewById(R.id.tv_email_value);
+        tv_name =  (TextView) findViewById(R.id.tv_name);
+        tv_phone =  (TextView) findViewById(R.id.tv_phone);
+        tv_email =  (TextView) findViewById(R.id.tv_email);
 
         Gson gson=new Gson();
         Intent intent = getIntent();

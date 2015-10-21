@@ -56,7 +56,6 @@ public class ContactListActivity extends ActionBarActivity
         mRecyclerView = (RecyclerView) findViewById(R.id.activity_main_recyclerview);
         final LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         mRecyclerView.setLayoutManager(layoutManager);
-        // mContacts = getContactNamesResource();
         setupAdapter(mContacts);
 
 
@@ -78,7 +77,6 @@ public class ContactListActivity extends ActionBarActivity
         FAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Import Contact
                 importContact();
             }
         });
@@ -119,11 +117,6 @@ public class ContactListActivity extends ActionBarActivity
             }
         }
     }
-
-
-//    private List<String> getContactNamesResource() {
-//        //return  new LinkedList(Arrays.asList(this.getResources().getStringArray(R.array.contact_names)));
-//    }
 
     private void setupAdapter(List<ContactDetails> contacts) {
         mContactNamesRecyclerViewAdapter = new ContactNamesRecyclerViewAdapter(this, contacts, this, db);
