@@ -26,13 +26,11 @@ import android.widget.Toast;
 import com.contactsharing.beamit.model.ContactDetails;
 import com.google.gson.Gson;
 
-import org.json.JSONObject;
-
 import java.io.File;
 import java.util.Arrays;
 
-public class MainActivity extends ActionBarActivity {
-    private static final String TAG = MainActivity.class.getSimpleName();
+public class SigninActivity extends ActionBarActivity {
+    private static final String TAG = SigninActivity.class.getSimpleName();
     NfcAdapter nfcAdapter;
 
     private TextView mTextView;
@@ -41,12 +39,12 @@ public class MainActivity extends ActionBarActivity {
     private IntentFilter[] mIntentFilters;
     private String[][] mNFCTechLists;
 
-    public final static String EXTRA_MESSAGE = "com.contactsharing.beamit.MainActivity";
+    public final static String EXTRA_MESSAGE = "com.contactsharing.beamit.SigninActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_signin);
 
         PackageManager pm = this.getPackageManager();
         // Check whether NFC is available on device
@@ -224,7 +222,8 @@ public class MainActivity extends ActionBarActivity {
         Intent intent = null;
         switch(view.getId()){
             case R.id.bt_sign_in:
-                intent = new Intent(this, ContactListActivity.class);
+//                intent = new Intent(this, ContactListActivity.class);
+                intent = new Intent(this, EditProfileActivity.class);
                 break;
             case R.id.tv_sign_up:
                 intent = new Intent(this, SignUpActivity.class);

@@ -28,7 +28,7 @@ public class DisplayCardActivity extends Activity {
 
         Gson gson=new Gson();
         Intent intent = getIntent();
-        String receivedString = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
+        String receivedString = intent.getStringExtra(SigninActivity.EXTRA_MESSAGE);
         ContactDetails cd =  gson.fromJson(receivedString, ContactDetails.class);
         String s = cd.toString();
         Log.d("displaycard test: ", s);
@@ -41,7 +41,7 @@ public class DisplayCardActivity extends Activity {
 //    @Override
 //    public void onNewIntent(Intent intent) {
 //        Gson gson=new Gson();
-//        String receivedString = intent.getStringExtra(MainActivity.EXTRA_MESSAGE);
+//        String receivedString = intent.getStringExtra(SigninActivity.EXTRA_MESSAGE);
 //        ContactDetails cd =  gson.fromJson(receivedString, ContactDetails.class);
 //        String s = cd.toString();
 //        Log.d("displaycard test: ", s);

@@ -10,6 +10,7 @@ import android.view.View;
 
 public class SignUpActivity extends ActionBarActivity {
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -46,7 +47,7 @@ public class SignUpActivity extends ActionBarActivity {
                intent = new Intent(this, ContactListActivity.class);
                break;
            case R.id.tv_sign_in:
-               intent = new Intent(this, MainActivity.class);
+               intent = new Intent(this, SigninActivity.class);
                break;
            default:
                return;

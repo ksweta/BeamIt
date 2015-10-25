@@ -19,4 +19,11 @@
 
     <!--Hint string -->
     <string name="iv_contact_photo">Contact photo</string>
+    <string name="company">Company name</string>
+    <string name="name">Full name</string>
+    <string name="linkedin_url">Linkedin URL</string>
+    <string name="save">save</string>
+    <string name="cancel">Cancel</string>
+    <string name="linkedin_import">Linkedin import</string>
+    <string name="title_activity_edit_profile">Edit profile</string>
 </resources>

@@ -17,6 +17,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
+import com.contactsharing.beamit.com.contactsharing.beamit.utility.BitmapUtility;
 import com.contactsharing.beamit.model.ContactDetails;
 
 /**
@@ -35,7 +36,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String COLUMN_LINKEDIN_URL = "linkedinUrl";
     public static final String COLUMN_PHOTO = "photo";
     public static final String COLUMN_SYNC_DATE = "syncDate";
-    private static final String DATABASE_NAME = "contact_details.db";
+    private static final String DATABASE_NAME = "beamit.db";
     private static final int DATABASE_VERSION = 1;
 
     /**
@@ -207,7 +208,7 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(DBHelper.COLUMN_EMAIL, contact.getEmail());
         values.put(DBHelper.COLUMN_COMPANY, contact.getCompany());
         values.put(DBHelper.COLUMN_LINKEDIN_URL, contact.getLinkedinUrl());
-        values.put(DBHelper.COLUMN_PHOTO, contact.getPhoto() == null ? null : contact.getPhoto().getRowBytes());
+        values.put(DBHelper.COLUMN_PHOTO, BitmapUtility.getBitmapToBytes(contact.getPhoto()));
         values.put(DBHelper.COLUMN_SYNC_DATE, simpleDateFormat.format(contact.getSyncDate()));
         return values;
     }
