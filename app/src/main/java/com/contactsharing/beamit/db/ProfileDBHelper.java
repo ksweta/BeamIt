@@ -10,7 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
-import com.contactsharing.beamit.com.contactsharing.beamit.utility.BitmapUtility;
+import com.contactsharing.beamit.utility.BitmapUtility;
 import com.contactsharing.beamit.model.ProfileDetails;
 
 import java.text.SimpleDateFormat;

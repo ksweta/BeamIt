@@ -1,4 +1,4 @@
-package com.contactsharing.beamit.com.contactsharing.beamit.utility;
+package com.contactsharing.beamit.utility;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
