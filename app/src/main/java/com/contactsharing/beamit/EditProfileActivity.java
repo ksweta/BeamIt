@@ -210,16 +210,19 @@ public class EditProfileActivity extends ActionBarActivity {
             Log.d(TAG, String.format("LinedIn=> last name: %s", profile.getLastName()));
             Log.d(TAG, String.format("LinedIn=> email: %s", profile.getEmail()));
             Log.d(TAG, String.format("LinedIn=> url: %s", profile.getProfileImageURL()));
+            Log.d(TAG, String.format("LinkedIn=> id: %s", profile.getProviderId()));
             etName.setText(String.format("%s %s", profile.getFirstName(), profile.getLastName()));
             etEmail.setText(profile.getEmail());
             if (profile.getProfileImageURL() != null) {
                 new DownloadLinkedinProifilImage().execute(profile.getProfileImageURL());
             }
+
+            Toast.makeText(getApplicationContext(), "Successfully imported!", Toast.LENGTH_SHORT).show();
         }
 
         @Override
         public void onError(SocialAuthError e) {
-
+            Toast.makeText(getApplicationContext(), "Coulnd't import LinkedIn profile info", Toast.LENGTH_SHORT).show();
         }
     }
 
