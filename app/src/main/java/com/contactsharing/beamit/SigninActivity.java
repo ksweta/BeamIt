@@ -223,7 +223,8 @@ public class SigninActivity extends ActionBarActivity {
         switch(view.getId()){
             case R.id.bt_sign_in:
 //                intent = new Intent(this, ContactListActivity.class);
-                intent = new Intent(this, EditProfileActivity.class);
+//                intent = new Intent(this, EditProfileActivity.class);
+                intent = new Intent(this, DisplayCardActivity.class);
                 break;
             case R.id.tv_sign_up:
                 intent = new Intent(this, SignUpActivity.class);
