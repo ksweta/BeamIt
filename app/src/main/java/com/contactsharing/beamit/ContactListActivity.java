@@ -200,12 +200,25 @@ public class ContactListActivity extends ActionBarActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
+        switch(id){
+            case R.id.action_settings:
+                // TODO: Need to handle settings.
 
-        return super.onOptionsItemSelected(item);
+                return true;
+
+            case R.id.action_edit_profile:
+                // TODO: Need to handle edit profile.
+                launchEditProfileActivity();
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void launchEditProfileActivity(){
+        Intent intent = new Intent(this, EditProfileActivity.class);
+        startActivity(intent);
     }
 
     @Override

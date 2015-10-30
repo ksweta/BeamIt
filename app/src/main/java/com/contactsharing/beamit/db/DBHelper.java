@@ -17,6 +17,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.util.Log;
 
+import com.contactsharing.beamit.model.ProfileDetails;
 import com.contactsharing.beamit.utility.BitmapUtility;
 import com.contactsharing.beamit.model.ContactDetails;
 
@@ -28,6 +29,8 @@ import com.contactsharing.beamit.model.ContactDetails;
 public class DBHelper extends SQLiteOpenHelper {
     private static final String TAG = DBHelper.class.getSimpleName();
     public static final String TABLE_NAME_CONTACTS = "contacts";
+    public static final String TABLE_NAME_PROFILE = "profile";
+
     public static final String COLUMN_ID = "_id";
     public static final String COLUMN_NAME = "name";
     public static final String COLUMN_PHONE = "phone";
@@ -55,6 +58,15 @@ public class DBHelper extends SQLiteOpenHelper {
             + COLUMN_PHOTO + " BLOB, "
             + COLUMN_SYNC_DATE + " TEXT NOT NULL);";
 
+    private static final String DATABASE_CREATE_PROFILE_TABLE = "CREATE TABLE " + TABLE_NAME_PROFILE +
+            "(" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
+            + COLUMN_NAME + " TEXT NOT NULL, "
+            + COLUMN_PHONE + " TEXT, "
+            + COLUMN_EMAIL + " TEXT NOT NULL, "
+            + COLUMN_COMPANY + " TEXT, "
+            + COLUMN_LINKEDIN_URL + " TEXT, "
+            + COLUMN_PHOTO + " BLOB, "
+            + COLUMN_SYNC_DATE + " TEXT);";
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -65,6 +77,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         //Create Contact table
         db.execSQL(DATABASE_CREATE_CONTACT_TABLE);
+        db.execSQL(DATABASE_CREATE_PROFILE_TABLE);
     }
 
     @Override
@@ -72,6 +85,7 @@ public class DBHelper extends SQLiteOpenHelper {
         //TODO Dropping the table and recreating is not a good idea.
         // need to write a better logic to handle DB upgrade.
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME_CONTACTS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME_PROFILE);
         onCreate(db);
     }
 
@@ -84,6 +98,9 @@ public class DBHelper extends SQLiteOpenHelper {
         return result;
     }
 
+
+
+
     public List<ContactDetails> readAllContacts() {
         //Get all columns from Contacts  table.
         String[] allColumns = new String[]{DBHelper.COLUMN_ID,
@@ -92,7 +109,6 @@ public class DBHelper extends SQLiteOpenHelper {
                 DBHelper.COLUMN_EMAIL,
                 DBHelper.COLUMN_COMPANY,
                 DBHelper.COLUMN_LINKEDIN_URL,
-                DBHelper.COLUMN_PHOTO,
                 DBHelper.COLUMN_SYNC_DATE};
 
         Cursor cursor = getReadableDatabase().query(DBHelper.TABLE_NAME_CONTACTS,
@@ -114,22 +130,19 @@ public class DBHelper extends SQLiteOpenHelper {
             int emailColIndex = cursor.getColumnIndex(DBHelper.COLUMN_EMAIL);
             int companyIndex = cursor.getColumnIndex(DBHelper.COLUMN_COMPANY);
             int linkedinUrlIndex = cursor.getColumnIndex(DBHelper.COLUMN_LINKEDIN_URL);
-            int photoIndex = cursor.getColumnIndex(DBHelper.COLUMN_PHOTO);
             int syncDateIndex = cursor.getColumnIndex(DBHelper.COLUMN_SYNC_DATE);
 
 
             while (cursor.moveToNext()) {
                 //simpleDateFormat.parse() throws exception, necessary to have try-catch block here.
                 try {
-                    byte[] rowPhoto = cursor.getBlob(photoIndex);
-                    Bitmap photo = rowPhoto == null? null : BitmapFactory.decodeByteArray(rowPhoto, 0, rowPhoto.length);
                     ContactDetails contact = new ContactDetails(cursor.getLong(idColIndex),
                             cursor.getString(nameColIndex),
                             cursor.getString(phoneColIndex),
                             cursor.getString(emailColIndex),
                             cursor.getString(companyIndex),
                             cursor.getString(linkedinUrlIndex),
-                            photo,
+                            null,
                             simpleDateFormat.parse(cursor.getString(syncDateIndex)));
 
                     contactList.add(contact);
@@ -277,4 +290,108 @@ public class DBHelper extends SQLiteOpenHelper {
         return contactList;
 
     }
+
+    public long updateProfile(ProfileDetails profileDetails) {
+        Log.d(TAG, String.format("ProfileDetails : %s", profileDetails.toString()));
+        long result = getWritableDatabase().insertWithOnConflict(
+                DBHelper.TABLE_NAME_PROFILE,
+                DBHelper.COLUMN_ID,
+                getValues(profileDetails),
+                SQLiteDatabase.CONFLICT_REPLACE);
+        Log.i(TAG, String.format("Updated row: %d", result));
+        return result;
+    }
+
+    /**
+     * Fetch Profile details.
+     * @return
+     */
+    public ProfileDetails fetchProfileDetails(){
+        //Fetch all columns from profile table.
+        String[] allColumns = new String[]{DBHelper.COLUMN_ID,
+                DBHelper.COLUMN_NAME,
+                DBHelper.COLUMN_PHONE,
+                DBHelper.COLUMN_EMAIL,
+                DBHelper.COLUMN_COMPANY,
+                DBHelper.COLUMN_LINKEDIN_URL,
+                DBHelper.COLUMN_PHOTO,
+                DBHelper.COLUMN_SYNC_DATE};
+
+        Cursor cursor = getReadableDatabase().query(DBHelper.TABLE_NAME_PROFILE,
+                allColumns,
+                null,
+                null,
+                null,
+                null,
+                null);
+
+        if (cursor != null && cursor.getCount() > 0) {
+            cursor.moveToFirst();
+            Log.d(TAG, String.format("Cursor record count: %d", cursor.getCount()));
+
+
+
+            // Get the index of the various columns. This helps to get
+            // the column value from the cursor object.
+            int idColIndex = cursor.getColumnIndex(DBHelper.COLUMN_ID);
+            int nameColIndex = cursor.getColumnIndex(DBHelper.COLUMN_NAME);
+            int phoneColIndex = cursor.getColumnIndex(DBHelper.COLUMN_PHONE);
+            int emailColIndex = cursor.getColumnIndex(DBHelper.COLUMN_EMAIL);
+            int companyIndex = cursor.getColumnIndex(DBHelper.COLUMN_COMPANY);
+            int linkedinUrlIndex = cursor.getColumnIndex(DBHelper.COLUMN_LINKEDIN_URL);
+            int photoIndex = cursor.getColumnIndex(DBHelper.COLUMN_PHOTO);
+            int syncDateIndex = cursor.getColumnIndex(DBHelper.COLUMN_SYNC_DATE);
+
+
+            //simpleDateFormat.parse() throws exception, necessary to have try-catch block here.
+            try {
+                byte[] rowPhoto = cursor.getBlob(photoIndex);
+                Bitmap photo = rowPhoto == null? null : BitmapFactory.decodeByteArray(rowPhoto, 0, rowPhoto.length);
+                String syncDate = cursor.getString(syncDateIndex);
+                ProfileDetails profileDetails = new ProfileDetails(cursor.getLong(idColIndex),
+                        cursor.getString(nameColIndex),
+                        cursor.getString(phoneColIndex),
+                        cursor.getString(emailColIndex),
+                        cursor.getString(companyIndex),
+                        cursor.getString(linkedinUrlIndex),
+                        photo,
+                        syncDate == null? null : simpleDateFormat.parse(syncDate));
+
+                return profileDetails;
+            } catch (Exception e) {
+                Log.e(TAG, e.getMessage(), e);
+            } finally {
+                if (cursor != null) {
+                    cursor.close();
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * This is a helper method to convert ProfileDetails object to ContentValues
+     * This contentValues object is used in various CRUD methods.
+     *
+     * @param profileDetails
+     * @return
+     */
+
+    private ContentValues getValues(ProfileDetails profileDetails) {
+        ContentValues values = new ContentValues();
+        values.put(DBHelper.COLUMN_ID, profileDetails.getId());
+        values.put(DBHelper.COLUMN_NAME, profileDetails.getName());
+        values.put(DBHelper.COLUMN_PHONE, profileDetails.getPhone());
+        values.put(DBHelper.COLUMN_EMAIL, profileDetails.getEmail());
+        values.put(DBHelper.COLUMN_COMPANY, profileDetails.getCompany());
+        values.put(DBHelper.COLUMN_LINKEDIN_URL, profileDetails.getLinkedinUrl());
+
+        values.put(DBHelper.COLUMN_PHOTO,
+                BitmapUtility.getBitmapToBytes(profileDetails.getPhoto()));
+        values.put(DBHelper.COLUMN_SYNC_DATE,
+                profileDetails.getSyncDate() == null ? null : simpleDateFormat.format(profileDetails.getSyncDate()));
+        return values;
+    }
+
+
 }

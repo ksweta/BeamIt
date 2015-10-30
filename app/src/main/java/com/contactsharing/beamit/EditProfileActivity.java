@@ -14,7 +14,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-import com.contactsharing.beamit.db.ProfileDBHelper;
+import com.contactsharing.beamit.db.DBHelper;
 import com.contactsharing.beamit.model.ProfileDetails;
 
 import org.apache.http.HttpStatus;
@@ -51,7 +51,7 @@ public class EditProfileActivity extends ActionBarActivity {
     private SocialAuthAdapter adapter;
 
     //Db
-    private ProfileDBHelper mProfileDb;
+    private DBHelper mProfileDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,7 +64,7 @@ public class EditProfileActivity extends ActionBarActivity {
         etLinkeninUrl = (EditText) findViewById(R.id.et_linkedin_url);
 
         if (mProfileDb == null) {
-            mProfileDb = new ProfileDBHelper(this);
+            mProfileDb = new DBHelper(this);
         }
         //Fetch the profile details.
         mProfileDetails = mProfileDb.fetchProfileDetails();

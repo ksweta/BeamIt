@@ -1,5 +1,6 @@
 package com.contactsharing.beamit;
 
+import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -29,11 +30,10 @@ import com.google.gson.Gson;
 import java.io.File;
 import java.util.Arrays;
 
-public class SigninActivity extends ActionBarActivity {
+public class SigninActivity extends Activity {
     private static final String TAG = SigninActivity.class.getSimpleName();
     NfcAdapter nfcAdapter;
 
-    private TextView mTextView;
     private NfcAdapter mNfcAdapter;
     private PendingIntent mPendingIntent;
     private IntentFilter[] mIntentFilters;
@@ -194,37 +194,13 @@ public class SigninActivity extends ActionBarActivity {
             mNfcAdapter.disableForegroundDispatch(this);
     }
 
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
-    }
-
-
     public void onClick(View view){
         Intent intent = null;
         switch(view.getId()){
             case R.id.bt_sign_in:
-//                intent = new Intent(this, ContactListActivity.class);
+                intent = new Intent(this, ContactListActivity.class);
 //                intent = new Intent(this, EditProfileActivity.class);
-                intent = new Intent(this, DisplayCardActivity.class);
+//                intent = new Intent(this, DisplayCardActivity.class);
                 break;
             case R.id.tv_sign_up:
                 intent = new Intent(this, SignUpActivity.class);
