@@ -225,11 +225,15 @@ public class ContactListActivity extends ActionBarActivity {
         switch(id){
             case R.id.action_settings:
                 // TODO: Need to handle settings.
-
                 return true;
 
+            case R.id.action_logout:
+                Intent intent = new Intent(this, SigninActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                startActivity(intent);
+                finish();
+                return true;
             case R.id.action_edit_profile:
-                // TODO: Need to handle edit profile.
                 launchEditProfileActivity();
                 return true;
 

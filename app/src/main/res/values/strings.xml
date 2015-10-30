@@ -28,4 +28,5 @@
     <string name="title_activity_edit_profile">Edit profile</string>
     <string name="title_activity_display_card">Contact details</string>
     <string name="action_edit_profile">Edit profile</string>
+    <string name="action_logout">Logout</string>
 </resources>
