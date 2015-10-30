@@ -29,6 +29,8 @@ import android.view.MenuItem;
 
 import com.contactsharing.beamit.db.DBHelper;
 import com.contactsharing.beamit.model.ContactDetails;
+import com.contactsharing.beamit.utility.ApplicationConstants;
+import com.contactsharing.beamit.utility.JsonConverter;
 
 import java.util.Arrays;
 import java.util.Date;
@@ -57,13 +59,22 @@ public class ContactListActivity extends ActionBarActivity {
         mContacts = mDb.readAllContacts();
 
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.activity_main_swipe_refresh_layout);
-        mContactNamesRecyclerViewAdapter = new ContactNamesRecyclerViewAdapter(mContacts, mDb);
+        mContactNamesRecyclerViewAdapter = new ContactNamesRecyclerViewAdapter(mContacts,
+                R.layout.contact_list_item,
+                mDb);
         mRecyclerView = (RecyclerView) findViewById(R.id.activity_main_recyclerview);
         mRecyclerView.setHasFixedSize(true);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setAdapter(mContactNamesRecyclerViewAdapter);
 
+        mContactNamesRecyclerViewAdapter.setOnItemClickListener(new OnRecyclerViewItemClickListener<ContactDetails>() {
+            @Override
+            public void onItemClick(View view, ContactDetails contactDetails) {
+
+                showContactDetails(contactDetails);
+            }
+        });
 
         mSwipeRefreshLayout.setColorSchemeResources(R.color.orange, R.color.green, R.color.blue);
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -107,11 +118,11 @@ public class ContactListActivity extends ActionBarActivity {
 
             int nameColIndex = cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME);
             int phoneColIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
-            int emailIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA);
+//            int emailIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Email.DATA);
             cursor.moveToFirst();
             String name = cursor.getString(nameColIndex);
             String phoneNumber = cursor.getString(phoneColIndex);
-            String email = cursor.getString(emailIndex);
+            String email = null; //cursor.getString(emailIndex);
 
             //Some cleanup job
             cursor.close();
@@ -126,6 +137,18 @@ public class ContactListActivity extends ActionBarActivity {
                 Log.d(TAG, String.format("name: %s, email: %s", name, email));
             }
         }
+    }
+
+    /**
+     * This method launches DisplayCardActivity.
+     * @param contactDetails
+     */
+    private void showContactDetails(ContactDetails contactDetails){
+        Log.d(TAG, String.format("showContactDetails() contactDetails: %s", contactDetails.toString()));
+        Intent intent = new Intent(this, DisplayCardActivity.class);
+        intent.putExtra(ApplicationConstants.EXTRA_CONTACT_DETAILS,
+                JsonConverter.toJson(contactDetails));
+        startActivity(intent);
     }
 
     @Override

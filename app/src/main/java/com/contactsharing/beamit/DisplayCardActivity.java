@@ -10,6 +10,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.contactsharing.beamit.model.ContactDetails;
+import com.contactsharing.beamit.utility.ApplicationConstants;
+import com.contactsharing.beamit.utility.JsonConverter;
 import com.google.gson.Gson;
 
 /**
@@ -30,15 +32,17 @@ public class DisplayCardActivity extends Activity {
         tv_phone =  (TextView) findViewById(R.id.tv_phone);
         tv_email =  (TextView) findViewById(R.id.tv_email);
 
-//        Gson gson=new Gson();
-//        Intent intent = getIntent();
-//        String receivedString = intent.getStringExtra(SigninActivity.EXTRA_MESSAGE);
-//        ContactDetails cd =  gson.fromJson(receivedString, ContactDetails.class);
-//        String s = cd.toString();
-//        Log.d(TAG, String.format("Displaycard test: %s", s));
-//        tv_name.setText(cd.getName());
-//        tv_phone.setText(cd.getPhone());
-//        tv_email.setText(cd.getEmail());
+        Intent intent = getIntent();
+        if (intent != null && intent.getStringExtra(ApplicationConstants.EXTRA_CONTACT_DETAILS) != null) {
+            String receivedString = intent.getStringExtra(ApplicationConstants.EXTRA_CONTACT_DETAILS);
+            ContactDetails cd = JsonConverter.toConcatDetails(receivedString);
+            Log.d(TAG, String.format("Displayed card: %s", cd.toString()));
+            tv_name.setText(cd.getName());
+            tv_phone.setText(cd.getPhone());
+            if (cd.getEmail() != null) {
+                tv_email.setText(cd.getEmail());
+            }
+        }
 
     }
 
