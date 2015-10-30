@@ -1,5 +1,6 @@
 package com.contactsharing.beamit;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
@@ -8,7 +9,8 @@ import android.view.MenuItem;
 import android.view.View;
 
 
-public class SignUpActivity extends ActionBarActivity {
+public class SignUpActivity extends Activity {
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,7 +48,7 @@ public class SignUpActivity extends ActionBarActivity {
                intent = new Intent(this, ContactListActivity.class);
                break;
            case R.id.tv_sign_in:
-               intent = new Intent(this, MainActivity.class);
+               intent = new Intent(this, SigninActivity.class);
                break;
            default:
                return;
