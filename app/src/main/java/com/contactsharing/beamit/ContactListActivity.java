@@ -185,13 +185,12 @@ public class ContactListActivity extends ActionBarActivity {
         ContactDetails contact = new ContactDetails(name,
                 phoneNumber,
                 email,
-                company, // TODO:  Company
-                linkedinUrl,  // TODO:  Linkedin url
-                photo,  // TODO: Contact photo.
+                company,        // TODO:  Company
+                linkedinUrl,    // TODO:  Linkedin url
+                photo,          // TODO: Contact photo.
                 new Date());
 
         if ( mContactNamesRecyclerViewAdapter.add(contact)) {
-
             //Notify user.
             Toast.makeText(this, "Contact added successfully", Toast.LENGTH_SHORT).show();
             Log.i(TAG, "Contact added successfully");

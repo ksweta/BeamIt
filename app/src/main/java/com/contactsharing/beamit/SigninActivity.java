@@ -15,12 +15,14 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Parcelable;
+import android.provider.MediaStore;
 import android.provider.Settings;
 import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,7 +35,8 @@ import java.util.Arrays;
 public class SigninActivity extends Activity {
     private static final String TAG = SigninActivity.class.getSimpleName();
     NfcAdapter nfcAdapter;
-
+    private EditText etEmail;
+    private EditText etPassword;
     private NfcAdapter mNfcAdapter;
     private PendingIntent mPendingIntent;
     private IntentFilter[] mIntentFilters;
@@ -45,6 +48,8 @@ public class SigninActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_signin);
+        etEmail = (EditText) findViewById(R.id.et_email);
+        etPassword = (EditText) findViewById(R.id.et_password);
 
         PackageManager pm = this.getPackageManager();
         // Check whether NFC is available on device
@@ -198,17 +203,22 @@ public class SigninActivity extends Activity {
         Intent intent = null;
         switch(view.getId()){
             case R.id.bt_sign_in:
-                intent = new Intent(this, ContactListActivity.class);
-//                intent = new Intent(this, EditProfileActivity.class);
-//                intent = new Intent(this, DisplayCardActivity.class);
-                break;
+                if (authenticateSignIn()) {
+                    startActivity(new Intent(this, ContactListActivity.class));
+                } else {
+                    Toast.makeText(this, "Please check your email or password", Toast.LENGTH_SHORT).show();
+                }
+                return;
             case R.id.tv_sign_up:
-                intent = new Intent(this, SignUpActivity.class);
-                break;
+                startActivity(new Intent(this, SignUpActivity.class));
+                return;
             default:
                 return;
         }
-        startActivity(intent);
     }
-
+    private boolean authenticateSignIn(){
+        String pwd = "madam0";
+        String username = "ksweta1007@gmail.com";
+        return pwd.equals(etPassword.getText().toString()) && username.equals(etEmail.getText().toString());
+    }
 }
