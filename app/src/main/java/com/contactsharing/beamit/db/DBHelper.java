@@ -369,6 +369,8 @@ public class DBHelper extends SQLiteOpenHelper {
         return null;
     }
 
+
+
     /**
      * This is a helper method to convert ProfileDetails object to ContentValues
      * This contentValues object is used in various CRUD methods.

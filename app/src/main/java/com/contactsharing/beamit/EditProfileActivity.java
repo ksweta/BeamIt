@@ -15,7 +15,9 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.contactsharing.beamit.db.DBHelper;
+import com.contactsharing.beamit.model.ContactDetails;
 import com.contactsharing.beamit.model.ProfileDetails;
+import com.contactsharing.beamit.utility.BitmapUtility;
 
 import org.apache.http.HttpStatus;
 
@@ -67,9 +69,7 @@ public class EditProfileActivity extends ActionBarActivity {
             mProfileDb = new DBHelper(this);
         }
         //Fetch the profile details.
-        mProfileDetails = mProfileDb.fetchProfileDetails();
-
-        updateUI();
+        new FetchProfileDetailsAsyncTask().execute();
 
         //LinkedInt import
         adapter = new SocialAuthAdapter(new ResponseListener());
@@ -99,8 +99,10 @@ public class EditProfileActivity extends ActionBarActivity {
                 break;
             case R.id.iv_profile_photo:
                 importProfileImage();
+                break;
             case R.id.tv_linkedin_import:
                 linkedinImport();
+                break;
             default:
                 Log.e(TAG, String.format("Wrong onClick option: %d", view.getId()));
         }
@@ -118,9 +120,7 @@ public class EditProfileActivity extends ActionBarActivity {
         mProfileDetails.setEmail(etEmail.getText().toString());
         mProfileDetails.setCompany(etCompany.getText().toString());
         mProfileDetails.setLinkedinUrl(etLinkeninUrl.getText().toString());
-        mProfileDb.updateProfile(mProfileDetails);
-        Toast.makeText(this, "Updated profile information", Toast.LENGTH_SHORT).show();
-
+        new SaveProfileDetailsAsyncTask().execute(mProfileDetails);
     }
 
     /**
@@ -148,8 +148,8 @@ public class EditProfileActivity extends ActionBarActivity {
         final Uri imageUri = intent.getData();
         try {
             final InputStream imageStream = getContentResolver().openInputStream(imageUri);
-            final Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
-            ivProfilePhoto.setImageBitmap(selectedImage);
+            Bitmap selectedImage = BitmapFactory.decodeStream(imageStream);
+            ivProfilePhoto.setImageBitmap(BitmapUtility.getResizedBitmap(selectedImage, 150, 150));
         } catch (FileNotFoundException e) {
             Log.w(TAG, e);
         }
@@ -226,7 +226,10 @@ public class EditProfileActivity extends ActionBarActivity {
         }
     }
 
-    //Async task to download the Linkedin profile
+    /**
+     * Async task to download the Linkedin profile
+     */
+
     private class DownloadLinkedinProifilImage extends AsyncTask<String, Integer, Bitmap> {
 
         @Override
@@ -267,6 +270,78 @@ public class EditProfileActivity extends ActionBarActivity {
 
             if (ivProfilePhoto != null && bitmap != null) {
                 ivProfilePhoto.setImageBitmap(bitmap);
+            }
+        }
+    }
+
+    /**
+     * Async Task to fetch profile information.
+     */
+
+    private class FetchProfileDetailsAsyncTask extends AsyncTask<Void, Integer, ProfileDetails> {
+
+        @Override
+        protected ProfileDetails doInBackground(Void... nothing){
+            DBHelper db = new DBHelper(getApplicationContext());
+            ProfileDetails profileDetails = null;
+            try {
+                profileDetails = db.fetchProfileDetails();
+            } catch (Exception e) {
+                Log.e(TAG, "couldn't fetch profile details", e);
+
+            } finally {
+                if (db != null) {
+                    db.close();
+                }
+            }
+            return profileDetails;
+        }
+
+        @Override
+        protected void onPostExecute(ProfileDetails profileDetails){
+
+            if (profileDetails != null){
+                mProfileDetails = profileDetails;
+                updateUI();
+            }
+        }
+    }
+
+    /**
+     * Async task to save profile details
+     */
+
+    private class SaveProfileDetailsAsyncTask extends AsyncTask<ProfileDetails, Integer, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(ProfileDetails... profileDetails){
+            DBHelper db = new DBHelper(getApplicationContext());
+            Boolean result = false;
+            ProfileDetails profile = profileDetails[0];
+            try {
+                if  (db.updateProfile(profile) > 0L){
+                    return true;
+                } else {
+                    return false;
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "couldn't fetch profile details", e);
+
+            } finally {
+                if (db != null) {
+                    db.close();
+                }
+            }
+            return result;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean result){
+
+            if (result){
+                Toast.makeText(getApplicationContext(), "Profile details saved successfully", Toast.LENGTH_SHORT).show();
+            } else {
+                Toast.makeText(getApplicationContext(), "Coudln't save profile details", Toast.LENGTH_SHORT).show();
             }
         }
     }

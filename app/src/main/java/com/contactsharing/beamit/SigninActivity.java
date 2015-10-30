@@ -218,7 +218,8 @@ public class SigninActivity extends Activity {
     }
     private boolean authenticateSignIn(){
         String pwd = "madam0";
-        String username = "ksweta1007@gmail.com";
-        return pwd.equals(etPassword.getText().toString()) && username.equals(etEmail.getText().toString());
+        String email = "ksweta1007@gmail.com";
+        Log.d(TAG, String.format("email: %s, password: %s", etEmail.getText().toString(), etPassword.getText().toString()));
+        return pwd.equalsIgnoreCase(etPassword.getText().toString()) && email.equalsIgnoreCase(etEmail.getText().toString());
     }
 }

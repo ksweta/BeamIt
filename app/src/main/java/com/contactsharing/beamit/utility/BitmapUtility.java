@@ -2,6 +2,7 @@ package com.contactsharing.beamit.utility;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 
 import java.io.ByteArrayOutputStream;
 
@@ -11,6 +12,7 @@ import java.io.ByteArrayOutputStream;
 public class BitmapUtility {
     /**
      * This method convert bitmap to bytes.
+     *
      * @param bitmap
      * @return
      */
@@ -25,6 +27,7 @@ public class BitmapUtility {
 
     /**
      * This method converts bytes to bitmap object.
+     *
      * @param bytes
      * @return
      */
@@ -35,5 +38,23 @@ public class BitmapUtility {
 
         return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 
+    }
+
+    /**
+     * This method compress the old bitmap to new size.
+     * @param oldBitmap
+     * @param newHeight
+     * @param newWidth
+     * @return
+     */
+    public static Bitmap getResizedBitmap(Bitmap oldBitmap, int newHeight, int newWidth) {
+
+        int width = oldBitmap.getWidth();
+        int height = oldBitmap.getHeight();
+        float scaleWidth = ((float)newWidth)/width;
+        float scaleHeight = ((float)newHeight)/height;
+        Matrix matrix = new Matrix();
+        matrix.postScale(scaleWidth, scaleHeight);
+        return Bitmap.createBitmap(oldBitmap, 0, 0, width, height, matrix, false);
     }
 }
