@@ -1,7 +1,5 @@
 <resources>
     <string name="app_name">BeamIt</string>
-
-    <string name="hello_world">Hello world!</string>
     <string name="email">Email</string>
     <string name="sign_in">Sign In</string>
     <string name="password">Password</string>
@@ -16,8 +14,6 @@
     <string name="title_activity_test">TestActivity</string>
     <string name="search_hint">Search contacts</string>
     <string name="title_activity_search_results">SearchResultsActivity</string>
-
-    <!--Hint string -->
     <string name="iv_contact_photo">Contact photo</string>
     <string name="company">Company name</string>
     <string name="name">Full name</string>
@@ -29,4 +25,6 @@
     <string name="title_activity_display_card">Contact details</string>
     <string name="action_edit_profile">Edit profile</string>
     <string name="action_logout">Logout</string>
+    <string name="email_or_phone">Email or Phone</string>
+    <string name="invite">Invite</string>
 </resources>

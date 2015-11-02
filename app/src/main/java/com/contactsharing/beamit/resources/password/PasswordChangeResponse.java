@@ -1,35 +1,36 @@
-package com.contactsharing.beamit.resources.signin;
+package com.contactsharing.beamit.resources.password;
 
 import com.google.gson.annotations.SerializedName;
 
 /**
- * Created by kumari on 10/29/15.
+ * Created by kumari on 10/30/15.
  */
-public class SigninResponse {
+public class PasswordChangeResponse {
     @SerializedName("user_id")
-    Long userId;
+    private String userId;
 
-    public SigninResponse(){
-        //Required by the system.
+    public PasswordChangeResponse(){
+        //Required by the system
     }
-    public SigninResponse(Long userId) {
+
+    public PasswordChangeResponse(String userId) {
         this.userId = userId;
     }
 
-    public Long getUserId() {
+    public String getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(String userId) {
         this.userId = userId;
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof SigninResponse)) return false;
+        if (!(o instanceof PasswordChangeResponse)) return false;
 
-        SigninResponse that = (SigninResponse) o;
+        PasswordChangeResponse that = (PasswordChangeResponse) o;
 
         return !(getUserId() != null ? !getUserId().equals(that.getUserId()) : that.getUserId() != null);
 
@@ -42,7 +43,7 @@ public class SigninResponse {
 
     @Override
     public String toString() {
-        return "SigninResponse{" +
+        return "PasswordChangeResponse{" +
                 "userId='" + userId + '\'' +
                 '}';
     }

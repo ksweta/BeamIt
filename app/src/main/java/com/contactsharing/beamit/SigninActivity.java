@@ -15,22 +15,27 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Parcelable;
-import android.provider.MediaStore;
 import android.provider.Settings;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.contactsharing.beamit.model.ContactDetails;
+import com.contactsharing.beamit.resources.signin.SigninRequest;
+import com.contactsharing.beamit.resources.signin.SigninResponse;
+import com.contactsharing.beamit.transport.BeamItService;
+import com.contactsharing.beamit.transport.BeamItServiceTransport;
 import com.google.gson.Gson;
 
 import java.io.File;
+import java.net.HttpURLConnection;
 import java.util.Arrays;
+
+import retrofit.Call;
+import retrofit.Callback;
+import retrofit.Response;
+import retrofit.Retrofit;
 
 public class SigninActivity extends Activity {
     private static final String TAG = SigninActivity.class.getSimpleName();
@@ -203,11 +208,7 @@ public class SigninActivity extends Activity {
         Intent intent = null;
         switch(view.getId()){
             case R.id.bt_sign_in:
-                if (authenticateSignIn()) {
-                    startActivity(new Intent(this, ContactListActivity.class));
-                } else {
-                    Toast.makeText(this, "Please check your email or password", Toast.LENGTH_SHORT).show();
-                }
+                authenticateSignIn();
                 return;
             case R.id.tv_sign_up:
                 startActivity(new Intent(this, SignUpActivity.class));
@@ -216,10 +217,39 @@ public class SigninActivity extends Activity {
                 return;
         }
     }
-    private boolean authenticateSignIn(){
-        String pwd = "madam0";
-        String email = "ksweta1007@gmail.com";
-        Log.d(TAG, String.format("email: %s, password: %s", etEmail.getText().toString(), etPassword.getText().toString()));
-        return pwd.equalsIgnoreCase(etPassword.getText().toString()) && email.equalsIgnoreCase(etEmail.getText().toString());
+
+    private void goToContactListActivit(){
+        startActivity(new Intent(this, ContactListActivity.class));
+        finish();
+    }
+
+    private void authenticateSignIn(){
+        String email = etEmail.getText().toString();
+        String password = etPassword.getText().toString();
+        SigninRequest signinRequest = new SigninRequest(email, password);
+        BeamItService service = BeamItServiceTransport.getService();
+
+        Call<SigninResponse> call = service.signin(signinRequest);
+        call.enqueue(new Callback<SigninResponse>() {
+            @Override
+            public void onResponse(Response<SigninResponse> response, Retrofit retrofit) {
+                SigninResponse signinResponse = response.body();
+                Log.d(TAG,
+                        String.format("Signup successful=> status code: %d, body: %s ",
+                                response.code(),
+                                response.body()));
+
+                if(response.code() == HttpURLConnection.HTTP_OK) {
+                    goToContactListActivit();
+                } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
+                    Toast.makeText(getApplicationContext(), "Wrong email address or password.", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                Log.e(TAG, "signup failed", t);
+            }
+        });
     }
 }

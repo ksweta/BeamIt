@@ -9,7 +9,10 @@ import java.util.Date;
  */
 public class ProfileDetails {
 
+    //This id field is used by sqlite.
     private Long id;
+    //This id is provided by the server when app register with server.
+    private Long userId;
     private String name;
     private String phone;
     private String email;
@@ -25,7 +28,18 @@ public class ProfileDetails {
         this.id = 1L;
     }
 
+    /**
+     * Helper constructor for signup activity.
+     * @param userId
+     * @param email
+     */
+    public ProfileDetails(Long userId, String email){
+
+        this(null, userId, null, null, email, null, null, null, null);
+    }
+
     public ProfileDetails(Long id,
+                          Long userId,
                           String name,
                           String phone,
                           String email,
@@ -39,7 +53,7 @@ public class ProfileDetails {
         } else {
             this.id = id;
         }
-
+        this.userId = userId;
         this.name = name;
         this.phone = phone;
         this.email = email;
@@ -52,6 +66,14 @@ public class ProfileDetails {
     public Long getId() { return id; }
 
     public void setId(Long id) { this.id = id; }
+
+    public Long getUserId() {
+        return userId;
+    }
+
+    public void setUserId(Long userId) {
+        this.userId = userId;
+    }
 
     public String getName() {
         return name;
@@ -116,6 +138,9 @@ public class ProfileDetails {
 
         ProfileDetails that = (ProfileDetails) o;
 
+        if (!getId().equals(that.getId())) return false;
+        if (getUserId() != null ? !getUserId().equals(that.getUserId()) : that.getUserId() != null)
+            return false;
         if (getName() != null ? !getName().equals(that.getName()) : that.getName() != null)
             return false;
         if (getPhone() != null ? !getPhone().equals(that.getPhone()) : that.getPhone() != null)
@@ -123,29 +148,36 @@ public class ProfileDetails {
         if (!getEmail().equals(that.getEmail())) return false;
         if (getCompany() != null ? !getCompany().equals(that.getCompany()) : that.getCompany() != null)
             return false;
-        return !(getLinkedinUrl() != null ? !getLinkedinUrl().equals(that.getLinkedinUrl()) : that.getLinkedinUrl() != null);
+        if (getLinkedinUrl() != null ? !getLinkedinUrl().equals(that.getLinkedinUrl()) : that.getLinkedinUrl() != null)
+            return false;
+        return !(getSyncDate() != null ? !getSyncDate().equals(that.getSyncDate()) : that.getSyncDate() != null);
 
     }
 
     @Override
     public int hashCode() {
-        int result = getName() != null ? getName().hashCode() : 0;
+        int result = getId().hashCode();
+        result = 31 * result + (getUserId() != null ? getUserId().hashCode() : 0);
+        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
         result = 31 * result + (getPhone() != null ? getPhone().hashCode() : 0);
         result = 31 * result + getEmail().hashCode();
         result = 31 * result + (getCompany() != null ? getCompany().hashCode() : 0);
         result = 31 * result + (getLinkedinUrl() != null ? getLinkedinUrl().hashCode() : 0);
+        result = 31 * result + (getSyncDate() != null ? getSyncDate().hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
         return "ProfileDetails{" +
-                "syncDate=" + syncDate +
-                ", linkedinUrl='" + linkedinUrl + '\'' +
+                "linkedinUrl='" + linkedinUrl + '\'' +
                 ", company='" + company + '\'' +
                 ", email='" + email + '\'' +
                 ", phone='" + phone + '\'' +
                 ", name='" + name + '\'' +
+                ", userId=" + userId +
+                ", id=" + id +
+                ", syncDate=" + syncDate +
                 '}';
     }
 }

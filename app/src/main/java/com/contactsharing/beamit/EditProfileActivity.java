@@ -1,5 +1,6 @@
 package com.contactsharing.beamit;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -7,7 +8,6 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
@@ -15,7 +15,6 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.contactsharing.beamit.db.DBHelper;
-import com.contactsharing.beamit.model.ContactDetails;
 import com.contactsharing.beamit.model.ProfileDetails;
 import com.contactsharing.beamit.utility.BitmapUtility;
 
@@ -37,7 +36,7 @@ import java.net.URL;
 /**
  * Created by Kumari on 10/23/15.
  */
-public class EditProfileActivity extends ActionBarActivity {
+public class EditProfileActivity extends Activity {
 
     private final String TAG = EditProfileActivity.class.getSimpleName();
     private final int PHOTO_PICKER_REQUEST_ID = 12000;
@@ -128,6 +127,8 @@ public class EditProfileActivity extends ActionBarActivity {
      */
     private void linkedinImport() {
         adapter.authorize(this, Provider.LINKEDIN);
+        new DownloadLinkedinProifilImage().execute("https://blooming-cliffs-9672.herokuapp.com/api/photo/user/1");
+
     }
 
     /**
@@ -214,7 +215,7 @@ public class EditProfileActivity extends ActionBarActivity {
             etName.setText(String.format("%s %s", profile.getFirstName(), profile.getLastName()));
             etEmail.setText(profile.getEmail());
             if (profile.getProfileImageURL() != null) {
-                new DownloadLinkedinProifilImage().execute(profile.getProfileImageURL());
+//                new DownloadLinkedinProifilImage().execute(profile.getProfileImageURL());
             }
 
             Toast.makeText(getApplicationContext(), "Successfully imported!", Toast.LENGTH_SHORT).show();
@@ -339,9 +340,9 @@ public class EditProfileActivity extends ActionBarActivity {
         protected void onPostExecute(Boolean result){
 
             if (result){
-                Toast.makeText(getApplicationContext(), "Profile details saved successfully", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "User details saved successfully", Toast.LENGTH_SHORT).show();
             } else {
-                Toast.makeText(getApplicationContext(), "Coudln't save profile details", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), "Coudln't save user details", Toast.LENGTH_SHORT).show();
             }
         }
     }

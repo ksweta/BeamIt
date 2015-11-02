@@ -6,10 +6,9 @@ import com.google.gson.annotations.SerializedName;
  * Created by kumari on 10/29/15.
  */
 public class Contact {
-    @SerializedName("user_id")
-    String userId;
-    @SerializedName("contact_id")
-    String contactId;
+    Integer id;
+    @SerializedName("owner_id")
+    Integer ownerId;
     String name;
     String phone;
     String email;
@@ -21,15 +20,15 @@ public class Contact {
         //Required by the system.
     }
 
-    public Contact(String userId,
-                   String contactId,
+    public Contact(Integer id,
+                   Integer ownerId,
                    String name,
                    String phone,
                    String email,
                    String company,
                    String linkedinUrl) {
-        this.userId = userId;
-        this.contactId = contactId;
+        this.id = id;
+        this.ownerId = ownerId;
         this.name = name;
         this.phone = phone;
         this.email = email;
@@ -37,20 +36,20 @@ public class Contact {
         this.linkedinUrl = linkedinUrl;
     }
 
-    public String getUserId() {
-        return userId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
-    public String getContactId() {
-        return contactId;
+    public Integer getOwnerId() {
+        return ownerId;
     }
 
-    public void setContactId(String contactId) {
-        this.contactId = contactId;
+    public void setOwnerId(Integer ownerId) {
+        this.ownerId = ownerId;
     }
 
     public String getName() {
@@ -100,9 +99,9 @@ public class Contact {
 
         Contact contact = (Contact) o;
 
-        if (getUserId() != null ? !getUserId().equals(contact.getUserId()) : contact.getUserId() != null)
+        if (getId() != null ? !getId().equals(contact.getId()) : contact.getId() != null)
             return false;
-        if (getContactId() != null ? !getContactId().equals(contact.getContactId()) : contact.getContactId() != null)
+        if (getOwnerId() != null ? !getOwnerId().equals(contact.getOwnerId()) : contact.getOwnerId() != null)
             return false;
         if (getName() != null ? !getName().equals(contact.getName()) : contact.getName() != null)
             return false;
@@ -118,8 +117,8 @@ public class Contact {
 
     @Override
     public int hashCode() {
-        int result = getUserId() != null ? getUserId().hashCode() : 0;
-        result = 31 * result + (getContactId() != null ? getContactId().hashCode() : 0);
+        int result = getId() != null ? getId().hashCode() : 0;
+        result = 31 * result + (getOwnerId() != null ? getOwnerId().hashCode() : 0);
         result = 31 * result + (getName() != null ? getName().hashCode() : 0);
         result = 31 * result + (getPhone() != null ? getPhone().hashCode() : 0);
         result = 31 * result + (getEmail() != null ? getEmail().hashCode() : 0);
@@ -131,8 +130,8 @@ public class Contact {
     @Override
     public String toString() {
         return "Contact{" +
-                "userId='" + userId + '\'' +
-                ", contactId='" + contactId + '\'' +
+                "id=" + id +
+                ", ownerId=" + ownerId +
                 ", name='" + name + '\'' +
                 ", phone='" + phone + '\'' +
                 ", email='" + email + '\'' +

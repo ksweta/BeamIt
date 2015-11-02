@@ -32,6 +32,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String TABLE_NAME_PROFILE = "profile";
 
     public static final String COLUMN_ID = "_id";
+    public static final String COLUMN_CONTACT_ID = "contactId";
     public static final String COLUMN_NAME = "name";
     public static final String COLUMN_PHONE = "phone";
     public static final String COLUMN_EMAIL = "email";
@@ -39,6 +40,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String COLUMN_LINKEDIN_URL = "linkedinUrl";
     public static final String COLUMN_PHOTO = "photo";
     public static final String COLUMN_SYNC_DATE = "syncDate";
+    public static final String COLUMN_USER_ID = "userId";
     private static final String DATABASE_NAME = "beamit.db";
     private static final int DATABASE_VERSION = 1;
 
@@ -50,7 +52,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_CREATE_CONTACT_TABLE = "CREATE TABLE " + TABLE_NAME_CONTACTS +
             "(" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + COLUMN_NAME + " TEXT NOT NULL, "
+            + COLUMN_CONTACT_ID + " INTEGER, "
+            + COLUMN_NAME + " TEXT, "
             + COLUMN_PHONE + " TEXT, "
             + COLUMN_EMAIL + " TEXT, "
             + COLUMN_COMPANY + " TEXT, "
@@ -60,7 +63,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_CREATE_PROFILE_TABLE = "CREATE TABLE " + TABLE_NAME_PROFILE +
             "(" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
-            + COLUMN_NAME + " TEXT NOT NULL, "
+            + COLUMN_USER_ID + " INTEGER, "
+            + COLUMN_NAME + " TEXT, "
             + COLUMN_PHONE + " TEXT, "
             + COLUMN_EMAIL + " TEXT NOT NULL, "
             + COLUMN_COMPANY + " TEXT, "
@@ -104,6 +108,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public List<ContactDetails> readAllContacts() {
         //Get all columns from Contacts  table.
         String[] allColumns = new String[]{DBHelper.COLUMN_ID,
+                DBHelper.COLUMN_CONTACT_ID,
                 DBHelper.COLUMN_NAME,
                 DBHelper.COLUMN_PHONE,
                 DBHelper.COLUMN_EMAIL,
@@ -125,6 +130,7 @@ public class DBHelper extends SQLiteOpenHelper {
             // Get the index of the various columns. This helps to get
             // the column value from the cursor object.
             int idColIndex = cursor.getColumnIndex(DBHelper.COLUMN_ID);
+            int contactIdIndex = cursor.getColumnIndex(DBHelper.COLUMN_CONTACT_ID);
             int nameColIndex = cursor.getColumnIndex(DBHelper.COLUMN_NAME);
             int phoneColIndex = cursor.getColumnIndex(DBHelper.COLUMN_PHONE);
             int emailColIndex = cursor.getColumnIndex(DBHelper.COLUMN_EMAIL);
@@ -137,6 +143,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 //simpleDateFormat.parse() throws exception, necessary to have try-catch block here.
                 try {
                     ContactDetails contact = new ContactDetails(cursor.getLong(idColIndex),
+                            cursor.getLong(contactIdIndex),
                             cursor.getString(nameColIndex),
                             cursor.getString(phoneColIndex),
                             cursor.getString(emailColIndex),
@@ -303,12 +310,13 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     /**
-     * Fetch Profile details.
+     * Fetch User details.
      * @return
      */
     public ProfileDetails fetchProfileDetails(){
         //Fetch all columns from profile table.
         String[] allColumns = new String[]{DBHelper.COLUMN_ID,
+                DBHelper.COLUMN_USER_ID,
                 DBHelper.COLUMN_NAME,
                 DBHelper.COLUMN_PHONE,
                 DBHelper.COLUMN_EMAIL,
@@ -334,6 +342,7 @@ public class DBHelper extends SQLiteOpenHelper {
             // Get the index of the various columns. This helps to get
             // the column value from the cursor object.
             int idColIndex = cursor.getColumnIndex(DBHelper.COLUMN_ID);
+            int userIdColIndex = cursor.getColumnIndex(DBHelper.COLUMN_USER_ID);
             int nameColIndex = cursor.getColumnIndex(DBHelper.COLUMN_NAME);
             int phoneColIndex = cursor.getColumnIndex(DBHelper.COLUMN_PHONE);
             int emailColIndex = cursor.getColumnIndex(DBHelper.COLUMN_EMAIL);
@@ -349,6 +358,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 Bitmap photo = rowPhoto == null? null : BitmapFactory.decodeByteArray(rowPhoto, 0, rowPhoto.length);
                 String syncDate = cursor.getString(syncDateIndex);
                 ProfileDetails profileDetails = new ProfileDetails(cursor.getLong(idColIndex),
+                        cursor.getLong(userIdColIndex),
                         cursor.getString(nameColIndex),
                         cursor.getString(phoneColIndex),
                         cursor.getString(emailColIndex),

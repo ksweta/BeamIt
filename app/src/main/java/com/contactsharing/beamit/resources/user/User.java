@@ -1,26 +1,25 @@
-package com.contactsharing.beamit.resources.profile;
+package com.contactsharing.beamit.resources.user;
 
 import com.google.gson.annotations.SerializedName;
 
 /**
  * Created by kumari on 10/29/15.
  */
-public class Profile {
-    @SerializedName("user_id")
-    String userId;
+public class User {
+    Integer id;
+    String email;
     String name;
     String phone;
-    String email;
     String company;
     @SerializedName("linkedin_url")
     String linkedinUrl;
 
-    public Profile(){
+    public User(){
         //Required by the system.
     }
 
-    public Profile(String userId, String name, String phone, String email, String company, String linkedinUrl) {
-        this.userId = userId;
+    public User(Integer id, String name, String phone, String email, String company, String linkedinUrl) {
+        this.id = id;
         this.name = name;
         this.phone = phone;
         this.email = email;
@@ -28,12 +27,12 @@ public class Profile {
         this.linkedinUrl = linkedinUrl;
     }
 
-    public String getUserId() {
-        return userId;
+    public Integer getId() {
+        return id;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setId(Integer id) {
+        this.id = id;
     }
 
     public String getName() {
@@ -79,11 +78,11 @@ public class Profile {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Profile)) return false;
+        if (!(o instanceof User)) return false;
 
-        Profile profile = (Profile) o;
+        User profile = (User) o;
 
-        if (getUserId() != null ? !getUserId().equals(profile.getUserId()) : profile.getUserId() != null)
+        if (getId() != null ? !getId().equals(profile.getId()) : profile.getId() != null)
             return false;
         if (getName() != null ? !getName().equals(profile.getName()) : profile.getName() != null)
             return false;
@@ -99,7 +98,7 @@ public class Profile {
 
     @Override
     public int hashCode() {
-        int result = getUserId() != null ? getUserId().hashCode() : 0;
+        int result = getId() != null ? getId().hashCode() : 0;
         result = 31 * result + (getName() != null ? getName().hashCode() : 0);
         result = 31 * result + (getPhone() != null ? getPhone().hashCode() : 0);
         result = 31 * result + (getEmail() != null ? getEmail().hashCode() : 0);
@@ -110,8 +109,8 @@ public class Profile {
 
     @Override
     public String toString() {
-        return "Profile{" +
-                "userId='" + userId + '\'' +
+        return "User{" +
+                "id='" + id + '\'' +
                 ", name='" + name + '\'' +
                 ", phone='" + phone + '\'' +
                 ", email='" + email + '\'' +

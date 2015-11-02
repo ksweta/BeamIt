@@ -128,7 +128,8 @@ public class ContactListActivity extends ActionBarActivity {
             cursor.close();
 
             if (name != null && !name.isEmpty()) {
-                saveNewContact(name,
+                saveNewContact(0L,
+                        name,
                         phoneNumber,
                         email,
                         "", //company name,
@@ -176,13 +177,16 @@ public class ContactListActivity extends ActionBarActivity {
      *
      * @param name Contact name.
      */
-    private void saveNewContact(String name,
+    private void saveNewContact(Long contactId,
+                                String name,
                                 String phoneNumber,
                                 String email,
                                 String company,
                                 String linkedinUrl,
                                 Bitmap photo) {
-        ContactDetails contact = new ContactDetails(name,
+        ContactDetails contact = new ContactDetails(
+                contactId,
+                name,
                 phoneNumber,
                 email,
                 company,        // TODO:  Company
@@ -227,14 +231,19 @@ public class ContactListActivity extends ActionBarActivity {
                 // TODO: Need to handle settings.
                 return true;
 
+            case R.id.action_invite:
+                // TODO: Need to handle invite flow
+                launchInviteActivity();
+                return true;
+            case R.id.action_edit_profile:
+                launchEditProfileActivity();
+                return true;
+
             case R.id.action_logout:
                 Intent intent = new Intent(this, SigninActivity.class);
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 finish();
-                return true;
-            case R.id.action_edit_profile:
-                launchEditProfileActivity();
                 return true;
 
             default:
@@ -243,10 +252,12 @@ public class ContactListActivity extends ActionBarActivity {
     }
 
     private void launchEditProfileActivity(){
-        Intent intent = new Intent(this, EditProfileActivity.class);
-        startActivity(intent);
+        startActivity(new Intent(this, EditProfileActivity.class));
     }
 
+    private void launchInviteActivity(){
+
+    }
     @Override
     protected void onNewIntent(Intent intent) {
         setIntent(intent);
