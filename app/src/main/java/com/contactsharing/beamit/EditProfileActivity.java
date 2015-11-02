@@ -16,7 +16,16 @@ import android.widget.Toast;
 
 import com.contactsharing.beamit.db.DBHelper;
 import com.contactsharing.beamit.model.ProfileDetails;
+import com.contactsharing.beamit.resources.signin.SigninRequest;
+import com.contactsharing.beamit.resources.signin.SigninResponse;
+import com.contactsharing.beamit.transport.BeamItService;
+import com.contactsharing.beamit.transport.BeamItServiceTransport;
 import com.contactsharing.beamit.utility.BitmapUtility;
+import com.squareup.okhttp.Headers;
+import com.squareup.okhttp.MediaType;
+import com.squareup.okhttp.MultipartBuilder;
+import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.ResponseBody;
 
 import org.apache.http.HttpStatus;
 
@@ -32,6 +41,11 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import retrofit.Call;
+import retrofit.Callback;
+import retrofit.Response;
+import retrofit.Retrofit;
 
 /**
  * Created by Kumari on 10/23/15.
@@ -100,7 +114,8 @@ public class EditProfileActivity extends Activity {
                 importProfileImage();
                 break;
             case R.id.tv_linkedin_import:
-                linkedinImport();
+//                linkedinImport();
+                downloadProfilePhoto();
                 break;
             default:
                 Log.e(TAG, String.format("Wrong onClick option: %d", view.getId()));
@@ -119,6 +134,7 @@ public class EditProfileActivity extends Activity {
         mProfileDetails.setEmail(etEmail.getText().toString());
         mProfileDetails.setCompany(etCompany.getText().toString());
         mProfileDetails.setLinkedinUrl(etLinkeninUrl.getText().toString());
+        uploadProfilePhoto();
         new SaveProfileDetailsAsyncTask().execute(mProfileDetails);
     }
 
@@ -126,8 +142,8 @@ public class EditProfileActivity extends Activity {
      * This method triggers Linkedin activity to import information.
      */
     private void linkedinImport() {
-        adapter.authorize(this, Provider.LINKEDIN);
-        new DownloadLinkedinProifilImage().execute("https://blooming-cliffs-9672.herokuapp.com/api/photo/user/1");
+//        adapter.authorize(this, Provider.LINKEDIN);
+        new DownloadLinkedinProifilImage().execute("https://blooming-cliffs-9672.herokuapp.com/api/photo/user/5");
 
     }
 
@@ -344,6 +360,69 @@ public class EditProfileActivity extends Activity {
             } else {
                 Toast.makeText(getApplicationContext(), "Coudln't save user details", Toast.LENGTH_SHORT).show();
             }
+        }
+    }
+
+    private void uploadProfilePhoto(){
+        BeamItService service = BeamItServiceTransport.getService();
+
+        MediaType MEDIA_TYPE_JPEG = MediaType.parse("image/jpeg");
+        byte [] data = BitmapUtility.getBitmapToBytes(((BitmapDrawable) ivProfilePhoto.getDrawable()).getBitmap());
+        Log.d(TAG, String.format("Profile detals => user_id: %d, size of data: %d", 5, data.length));
+
+        RequestBody requestBody1 = RequestBody.create(MEDIA_TYPE_JPEG,
+                                                    data);
+        Log.d(TAG, "requestBody: " + requestBody1.toString());
+        RequestBody requestBody2 = new MultipartBuilder()
+                .type(MultipartBuilder.FORM)
+                .addFormDataPart("photo", "t.jpeg", requestBody1)
+                .build();
+
+        Call<Void> call = service.uploadUserProfilePhoto(5, requestBody2);
+        call.enqueue(new ProfilePhotoUploadCallback());
+    }
+
+    private class ProfilePhotoUploadCallback implements Callback<Void> {
+
+        @Override
+        public void onResponse(Response<Void> response, Retrofit retrofit) {
+            Log.d(TAG, String.format("ProfilePhotoUploadCallback=> code: %d", response.code()));
+        }
+
+        @Override
+        public void onFailure(Throwable t) {
+
+        }
+    }
+
+    private void downloadProfilePhoto(){
+        BeamItService service = BeamItServiceTransport.getService();
+        Call<ResponseBody> call = service.downloadUserProfilePhoto(5);
+        call.enqueue(new ProfilePhotoDownloadCallback());
+    }
+
+    private class ProfilePhotoDownloadCallback implements Callback<ResponseBody>{
+
+        @Override
+        public void onResponse(Response<ResponseBody> response, Retrofit retrofit) {
+            Log.d(TAG, String.format("ProfilePhotoDownloadCallback=> code: %d", response.code()));
+            if (response.code() == HttpURLConnection.HTTP_OK) {
+                try {
+                    byte[] data = response.body().bytes();
+                    Log.d(TAG, String.format("data size: %d", data.length));
+                    Bitmap bitmap = BitmapUtility.getBytesToBitmap(data);
+                    if (bitmap != null){
+                        ivProfilePhoto.setImageBitmap(bitmap);
+                    }
+                } catch(Exception e){
+                    Log.e(TAG, "Exception wile extracting image", e);
+                }
+            }
+        }
+
+        @Override
+        public void onFailure(Throwable t) {
+            Log.e(TAG, "onFailure=> exception", t);
         }
     }
 }

@@ -27,6 +27,7 @@ import com.contactsharing.beamit.resources.signin.SigninResponse;
 import com.contactsharing.beamit.transport.BeamItService;
 import com.contactsharing.beamit.transport.BeamItServiceTransport;
 import com.google.gson.Gson;
+import com.squareup.okhttp.RequestBody;
 
 import java.io.File;
 import java.net.HttpURLConnection;

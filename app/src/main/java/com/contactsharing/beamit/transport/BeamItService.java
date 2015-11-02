@@ -9,6 +9,7 @@ import com.contactsharing.beamit.resources.signup.SignupRequest;
 import com.contactsharing.beamit.resources.signup.SignupResponse;
 import com.contactsharing.beamit.resources.user.User;
 import com.squareup.okhttp.RequestBody;
+import com.squareup.okhttp.ResponseBody;
 
 import retrofit.Call;
 import retrofit.Response;
@@ -40,11 +41,13 @@ public interface BeamItService {
     Call<PasswordChangeResponse> changePassword(@Body PasswordChangeRequest passwordChangeRequest);
 
     /* Photo api */
-    @Multipart
     @POST("/api/photo/user/{userId}")
-    Call<Response> uploadUserProfilePhoto(@Path("userId") Integer userId, @Part("photo") RequestBody photo);
+    Call<Void> uploadUserProfilePhoto(@Path("userId") Integer userId, @Body RequestBody photo);
 
     // TODO: downloadUserProfilePhoto() need to be defined
+
+    @GET("/api/photo/user/{userId}")
+    Call<ResponseBody> downloadUserProfilePhoto(@Path("userId") Integer userId);
 
     @DELETE("/api/photo/user/{userId")
     Call<Response> deleteUserProfilePhoto(@Path("userId") Integer userId);
