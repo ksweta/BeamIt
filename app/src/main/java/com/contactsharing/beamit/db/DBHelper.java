@@ -223,6 +223,7 @@ public class DBHelper extends SQLiteOpenHelper {
      */
     private ContentValues getValues(ContactDetails contact) {
         ContentValues values = new ContentValues();
+        values.put(DBHelper.COLUMN_CONTACT_ID, contact.getContactId());
         values.put(DBHelper.COLUMN_NAME, contact.getName());
         values.put(DBHelper.COLUMN_PHONE, contact.getPhone());
         values.put(DBHelper.COLUMN_EMAIL, contact.getEmail());
@@ -392,6 +393,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private ContentValues getValues(ProfileDetails profileDetails) {
         ContentValues values = new ContentValues();
         values.put(DBHelper.COLUMN_ID, profileDetails.getId());
+        values.put(DBHelper.COLUMN_USER_ID, profileDetails.getUserId());
         values.put(DBHelper.COLUMN_NAME, profileDetails.getName());
         values.put(DBHelper.COLUMN_PHONE, profileDetails.getPhone());
         values.put(DBHelper.COLUMN_EMAIL, profileDetails.getEmail());

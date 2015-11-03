@@ -21,6 +21,7 @@ import com.contactsharing.beamit.resources.signin.SigninResponse;
 import com.contactsharing.beamit.transport.BeamItService;
 import com.contactsharing.beamit.transport.BeamItServiceTransport;
 import com.contactsharing.beamit.utility.BitmapUtility;
+import com.contactsharing.beamit.utility.UtilityMethods;
 import com.squareup.okhttp.Headers;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.MultipartBuilder;
@@ -368,17 +369,21 @@ public class EditProfileActivity extends Activity {
 
         MediaType MEDIA_TYPE_JPEG = MediaType.parse("image/jpeg");
         byte [] data = BitmapUtility.getBitmapToBytes(((BitmapDrawable) ivProfilePhoto.getDrawable()).getBitmap());
-        Log.d(TAG, String.format("Profile detals => user_id: %d, size of data: %d", 5, data.length));
+        ProfileDetails profile = mProfileDb.fetchProfileDetails();
+        Log.d(TAG, String.format("Profile detals => user_id: %d, filename: %s, size of data: %d",
+                profile.getUserId(),
+                UtilityMethods.formatFileString("profile", profile.getUserId(), "jpeg"),
+                data.length));
 
-        RequestBody requestBody1 = RequestBody.create(MEDIA_TYPE_JPEG,
-                                                    data);
-        Log.d(TAG, "requestBody: " + requestBody1.toString());
-        RequestBody requestBody2 = new MultipartBuilder()
+        RequestBody requestBody = new MultipartBuilder()
                 .type(MultipartBuilder.FORM)
-                .addFormDataPart("photo", "t.jpeg", requestBody1)
+                .addFormDataPart("photo",
+                        UtilityMethods.formatFileString("profile", profile.getUserId(), "jpeg"),
+                        RequestBody.create(MEDIA_TYPE_JPEG, data))
                 .build();
 
-        Call<Void> call = service.uploadUserProfilePhoto(5, requestBody2);
+        Call<Void> call = service.uploadUserProfilePhoto(profile.getUserId().intValue(),
+                requestBody);
         call.enqueue(new ProfilePhotoUploadCallback());
     }
 

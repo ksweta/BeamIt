@@ -16,9 +16,7 @@ import retrofit.Response;
 import retrofit.http.Body;
 import retrofit.http.DELETE;
 import retrofit.http.GET;
-import retrofit.http.Multipart;
 import retrofit.http.POST;
-import retrofit.http.Part;
 import retrofit.http.Path;
 
 /**
@@ -44,19 +42,17 @@ public interface BeamItService {
     @POST("/api/photo/user/{userId}")
     Call<Void> uploadUserProfilePhoto(@Path("userId") Integer userId, @Body RequestBody photo);
 
-    // TODO: downloadUserProfilePhoto() need to be defined
-
     @GET("/api/photo/user/{userId}")
     Call<ResponseBody> downloadUserProfilePhoto(@Path("userId") Integer userId);
 
     @DELETE("/api/photo/user/{userId")
     Call<Response> deleteUserProfilePhoto(@Path("userId") Integer userId);
 
-    @Multipart
-    @POST("/api/photo/contact/{contactId")
-    Call<Response> uploadContactPhoto(@Path("contactId") Integer contactId, @Part("photo") RequestBody photo);
+    @POST("/api/photo/contact/{contactId}")
+    Call<Response> uploadContactPhoto(@Path("contactId") Integer contactId, @Body RequestBody photo);
 
-    // TODO: downloadContactPhoto() need to be defined
+    @GET("/api/photo/contact/{contactId}")
+    Call<ResponseBody> downloadContactPhoto(@Path("contactId") Integer contactId);
 
     @DELETE("/api/photo/contact/{contactId}")
     Call<Response> deleteContactPhoto(@Path("contactId") Integer contactId);
