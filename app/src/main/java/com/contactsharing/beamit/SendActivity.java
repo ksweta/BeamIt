@@ -26,17 +26,21 @@ import java.util.Locale;
  */
 public class SendActivity extends Activity {
     private static final String TAG = SendActivity.class.getSimpleName();
+    private TextView tv_name;
+    private TextView tv_phone;
+    private TextView tv_email;
 
-
+    //NFC related
     private NfcAdapter mNfcAdapter;
-    private TextView mTextView;
     private NdefMessage mNdefMessage;
 
     @Override
     public void onCreate(Bundle savedState) {
-        TextView tv_name;
-        TextView tv_phone;
-        TextView tv_email;
+        super.onCreate(savedState);
+        setContentView(R.layout.activity_send);
+        tv_name =  (TextView) findViewById(R.id.send_tv_name_value);
+        tv_phone =  (TextView) findViewById(R.id.send_tv_phone_value);
+        tv_email =  (TextView) findViewById(R.id.send_tv_email_value);
 
         Gson gson = new Gson();
 
@@ -52,13 +56,7 @@ public class SendActivity extends Activity {
         String json = gson.toJson(cd);
 
         Log.d(TAG, "Json string: " + json.toString());
-        super.onCreate(savedState);
 
-        setContentView(R.layout.activity_send);
-
-        tv_name =  (TextView) findViewById(R.id.send_tv_name_value);
-        tv_phone =  (TextView) findViewById(R.id.send_tv_phone_value);
-        tv_email =  (TextView) findViewById(R.id.send_tv_email_value);
 
         tv_name.setText(cd.getName());
         tv_phone.setText(cd.getPhone());
@@ -76,8 +74,9 @@ public class SendActivity extends Activity {
         // create an NDEF message with two records of plain text type
         mNdefMessage = new NdefMessage(
                 new NdefRecord[] {
-                        createNewTextRecord(json.toString(), Locale.ENGLISH, true) } );
-                        //createNewTextRecord("This is my email id: ksweta@", Locale.ENGLISH, true) });
+                        createNewTextRecord(json.toString(), Locale.ENGLISH, true)
+                }
+        );
     }
 
     public static NdefRecord createNewTextRecord(String text, Locale locale, boolean encodeInUtf8) {

@@ -9,6 +9,9 @@ import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
 import android.os.Handler;
 import android.provider.ContactsContract;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -29,13 +32,17 @@ import android.view.MenuItem;
 
 import com.contactsharing.beamit.db.DBHelper;
 import com.contactsharing.beamit.model.ContactDetails;
+import com.contactsharing.beamit.model.ProfileDetails;
 import com.contactsharing.beamit.utility.ApplicationConstants;
 import com.contactsharing.beamit.utility.JsonConverter;
+import com.google.gson.Gson;
 
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 public class ContactListActivity extends ActionBarActivity {
     private static final String TAG = ContactListActivity.class.getSimpleName();
@@ -93,11 +100,64 @@ public class ContactListActivity extends ActionBarActivity {
         FAB.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                importContact();
+                shareContact();
             }
         });
     }
 
+
+    private void shareContact(){
+        NfcAdapter nfcAdapter;
+        nfcAdapter = NfcAdapter.getDefaultAdapter(this);
+        if (nfcAdapter == null) {
+            Toast.makeText(this,
+                    "Contact sharing will not work because device is not a NFC device",
+                    Toast.LENGTH_SHORT).show();
+            return;
+        }
+        ProfileDetails profile = mDb.fetchProfileDetails();
+        Log.d(TAG, String.format("shareContact=> userId: %s", profile.getUserId()));
+
+        NdefMessage ndefMessage = new NdefMessage(
+                new NdefRecord[] {
+                        createNewTextRecord(profile.getUserId().toString(),
+                                Locale.ENGLISH,
+                                true)
+                }
+        );
+
+        nfcAdapter.enableForegroundNdefPush(this, ndefMessage);
+
+//        nfcAdapter.disableForegroundNdefPush(this);
+    }
+
+    /**
+     * This method creates the NdefRecord from the given string.
+     * @param text
+     * @param locale
+     * @param encodeInUtf8
+     * @return
+     */
+    public static NdefRecord createNewTextRecord(String text, Locale locale, boolean encodeInUtf8) {
+        byte[] langBytes = locale.getLanguage().getBytes(Charset.forName("US-ASCII"));
+
+        Charset utfEncoding = encodeInUtf8 ? Charset.forName("UTF-8") : Charset.forName("UTF-16");
+        byte[] textBytes = text.getBytes(utfEncoding);
+
+        int utfBit = encodeInUtf8 ? 0 : (1 << 7);
+        char status = (char)(utfBit + langBytes.length);
+
+        byte[] data = new byte[1 + langBytes.length + textBytes.length];
+        data[0] = (byte)status;
+        System.arraycopy(langBytes, 0, data, 1, langBytes.length);
+        System.arraycopy(textBytes, 0, data, 1 + langBytes.length, textBytes.length);
+
+        return new NdefRecord(NdefRecord.TNF_WELL_KNOWN, NdefRecord.RTD_TEXT, new byte[0], data);
+    }
+
+    /**
+     * This method launches the Google contact list to import the contact.
+     */
     private void importContact() {
         //Import contact using contact picker
         Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
@@ -227,16 +287,21 @@ public class ContactListActivity extends ActionBarActivity {
         int id = item.getItemId();
 
         switch(id){
-            case R.id.action_settings:
-                // TODO: Need to handle settings.
-                return true;
 
             case R.id.action_invite:
                 // TODO: Need to handle invite flow
                 launchInviteActivity();
                 return true;
+            case R.id.action_import_contact:
+                importContact();
+                return true;
+
             case R.id.action_edit_profile:
                 launchEditProfileActivity();
+                return true;
+
+            case R.id.action_settings:
+                // TODO: Need to handle settings.
                 return true;
 
             case R.id.action_logout:
@@ -244,6 +309,10 @@ public class ContactListActivity extends ActionBarActivity {
                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 startActivity(intent);
                 finish();
+                return true;
+
+            case R.id.action_test:
+                startActivity(new Intent(this, TestActivity.class));
                 return true;
 
             default:

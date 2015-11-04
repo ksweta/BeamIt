@@ -27,4 +27,6 @@
     <string name="action_logout">Logout</string>
     <string name="email_or_phone">Email or Phone</string>
     <string name="invite">Invite</string>
+    <string name="action_import_contact">Import contact</string>
+    <string name="action_test">test</string>
 </resources>
