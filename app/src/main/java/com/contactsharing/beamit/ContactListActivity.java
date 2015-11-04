@@ -2,17 +2,25 @@ package com.contactsharing.beamit;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.PendingIntent;
 import android.app.SearchManager;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
+import android.nfc.Tag;
+import android.nfc.tech.NfcA;
+import android.nfc.tech.NfcF;
+import android.os.Build;
 import android.os.Handler;
+import android.os.Parcelable;
 import android.provider.ContactsContract;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
@@ -48,19 +56,71 @@ public class ContactListActivity extends ActionBarActivity {
     private static final String TAG = ContactListActivity.class.getSimpleName();
     private static final int CONTACT_PICKER_RESULT = 1503;
     private SwipeRefreshLayout mSwipeRefreshLayout;
+    private ImageButton FAB;
+    private List<ContactDetails> mContacts;
+    private DBHelper mDb;
+
 
     //Recylcer view related variables
     private RecyclerView mRecyclerView;
     private ContactNamesRecyclerViewAdapter mContactNamesRecyclerViewAdapter;
 
-    ImageButton FAB;
-    private List<ContactDetails> mContacts;
-    private DBHelper mDb;
+    //NFC related
+    private NfcAdapter mNfcAdapter;
+    private PendingIntent mPendingIntent;
+    private IntentFilter[] mIntentFilters;
+    private String[][] mNFCTechLists;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact_list);
+
+        //NFC releated
+        PackageManager pm = this.getPackageManager();
+        // Check whether NFC is available on device
+        if (!pm.hasSystemFeature(PackageManager.FEATURE_NFC)) {
+            // NFC is not available on the device.
+            Toast.makeText(this, "The device does not has NFC hardware.",
+                    Toast.LENGTH_SHORT).show();
+        }
+        // Check whether device is running Android 4.1 or higher
+        else if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN) {
+            // Android Beam feature is not supported.
+            Toast.makeText(this, "Android Beam is not supported.",
+                    Toast.LENGTH_SHORT).show();
+        }
+        else {
+            // NFC and Android Beam file transfer is supported.
+//            Toast.makeText(this, "Android Beam is supported on your device.",
+//                    Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "Android Beam is supported on this device");
+        }
+        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
+
+        if(mNfcAdapter != null) {
+            Log.i(TAG, "Can read an NFC tag");
+        } else {
+            Log.e(TAG, "This phone is not NFC enabled");
+        }
+
+        // create an intent with tag data and deliver to this activity
+        mPendingIntent = PendingIntent.getActivity(this, 0,
+                new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
+
+        // set an intent filter for all MIME data
+        IntentFilter ndefIntent = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
+        try {
+            ndefIntent.addDataType("*/*");
+            mIntentFilters = new IntentFilter[] { ndefIntent };
+        } catch (Exception e) {
+            Log.e("TagDispatch", e.toString());
+        }
+
+        mNFCTechLists = new String[][] { new String[] { NfcF.class.getName() } };
+
+        // Debug
+        print2DStringArray(mNFCTechLists);
 
         mDb = new DBHelper(this);
         mContacts = mDb.readAllContacts();
@@ -105,6 +165,60 @@ public class ContactListActivity extends ActionBarActivity {
         });
     }
 
+    @Override
+    public void onNewIntent(Intent intent) {
+        String action = intent.getAction();
+        Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+        String receivedString = "";
+        String s = action + "\n\n" + tag.toString();
+        String s1 = "UTF-8";
+        String s2 = "UTF-16";
+
+        // parse through all NDEF messages and their records and pick text type only
+        Parcelable[] data = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
+        if (data != null) {
+            try {
+                for (int i = 0; i < data.length; i++) {
+                    NdefRecord[] recs = ((NdefMessage)data[i]).getRecords();
+                    for (int j = 0; j < recs.length; j++) {
+                        if (recs[j].getTnf() == NdefRecord.TNF_WELL_KNOWN &&
+                                Arrays.equals(recs[j].getType(), NdefRecord.RTD_TEXT)) {
+                            byte[] payload = recs[j].getPayload();
+                            String textEncoding = ((payload[0] & 0200) == 0) ?  s1 : s2;
+                            int langCodeLen = payload[0] & 0077;
+                            receivedString = new String(payload, langCodeLen + 1, payload.length - langCodeLen - 1,
+                                    textEncoding);
+                            Log.d(TAG, "receivedString: " + receivedString);
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "exception in onNewIntent", e);
+            }
+        }
+        Toast.makeText(this, "Received string: " + receivedString, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        if (mNfcAdapter != null) {
+            mNfcAdapter.enableForegroundDispatch(this, mPendingIntent, mIntentFilters, mNFCTechLists);
+        } else {
+            Log.d(TAG, "mNFCAdapter is null");
+        }
+
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+
+        if (mNfcAdapter != null) {
+            mNfcAdapter.disableForegroundDispatch(this);
+        }
+    }
 
     private void shareContact(){
         NfcAdapter nfcAdapter;
@@ -327,9 +441,31 @@ public class ContactListActivity extends ActionBarActivity {
     private void launchInviteActivity(){
 
     }
-    @Override
-    protected void onNewIntent(Intent intent) {
-        setIntent(intent);
+//    @Override
+//    protected void onNewIntent(Intent intent) {
+//        setIntent(intent);
+//    }
+
+    /**
+     * Helper method for debugging to print 2d string array.
+     * @param values
+     */
+    private void print2DStringArray(String[][] values){
+        StringBuilder result = new StringBuilder();
+        String separator = ",";
+
+        for (int i = 0; i < values.length; ++i)
+        {
+            result.append('[');
+            for (int j = 0; j < values[i].length; ++j) {
+                if (j > 0)
+                    result.append(values[i][j]);
+                else
+                    result.append(values[i][j]).append(separator);
+            }
+            result.append(']');
+        }
+        Log.d(TAG, String.format("2DString=> %s", result));
     }
 }
 
