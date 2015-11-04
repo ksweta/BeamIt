@@ -221,9 +221,7 @@ public class ContactListActivity extends ActionBarActivity {
     }
 
     private void shareContact(){
-        NfcAdapter nfcAdapter;
-        nfcAdapter = NfcAdapter.getDefaultAdapter(this);
-        if (nfcAdapter == null) {
+        if (mNfcAdapter == null) {
             Toast.makeText(this,
                     "Contact sharing will not work because device is not a NFC device",
                     Toast.LENGTH_SHORT).show();
@@ -240,9 +238,8 @@ public class ContactListActivity extends ActionBarActivity {
                 }
         );
 
-        nfcAdapter.enableForegroundNdefPush(this, ndefMessage);
+        mNfcAdapter.enableForegroundNdefPush(this, ndefMessage);
 
-//        nfcAdapter.disableForegroundNdefPush(this);
     }
 
     /**
@@ -441,10 +438,6 @@ public class ContactListActivity extends ActionBarActivity {
     private void launchInviteActivity(){
 
     }
-//    @Override
-//    protected void onNewIntent(Intent intent) {
-//        setIntent(intent);
-//    }
 
     /**
      * Helper method for debugging to print 2d string array.
