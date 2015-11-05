@@ -8,7 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.contactsharing.beamit.db.DBHelper;
 import com.contactsharing.beamit.model.ContactDetails;
@@ -90,7 +89,7 @@ public class ContactNamesRecyclerViewAdapter
 
     public boolean add(ContactDetails contactDetails) {
         int position = mContacts.size();
-        long contactId = mDb.insertContact(contactDetails);
+        Integer contactId = mDb.insertContact(contactDetails);
         Log.d(TAG, String.format("contactId: %d", contactId));
         if(contactId > -1) {
             contactDetails.setId(contactId);
@@ -103,7 +102,7 @@ public class ContactNamesRecyclerViewAdapter
     }
 
     public boolean add(ContactDetails contactDetails, int position){
-        long contactId = mDb.insertContact(contactDetails);
+        Integer contactId = mDb.insertContact(contactDetails);
         if(contactId > -1) {
             contactDetails.setId(contactId);
             mContacts.add(position, contactDetails);
@@ -136,8 +135,8 @@ public class ContactNamesRecyclerViewAdapter
                 @Override
                 public void onClick(View view) {
                     Intent intent = new Intent(view.getContext(), DisplayCardActivity.class);
-                    intent.putExtra(ApplicationConstants.EXTRA_CONTACT_DETAILS,
-                            JsonConverter.toJson(contactDetails));
+                    intent.putExtra(ApplicationConstants.EXTRA_CONTACT_LOCAL_ID,
+                            contactDetails.getId());
                     view.getContext().startActivity(intent);
                 }
             });

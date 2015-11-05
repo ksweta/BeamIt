@@ -3,45 +3,45 @@ package com.contactsharing.beamit;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.contactsharing.beamit.db.DBHelper;
 import com.contactsharing.beamit.model.ContactDetails;
 import com.contactsharing.beamit.utility.ApplicationConstants;
-import com.contactsharing.beamit.utility.JsonConverter;
-import com.google.gson.Gson;
 
 /**
  * Created by kumari on 9/15/15.
  */
 public class DisplayCardActivity extends Activity {
     public final static String TAG = DisplayCardActivity.class.getSimpleName();
-    TextView tv_name;
-    TextView tv_phone;
-    TextView tv_email;
+    private TextView tvName;
+    private TextView tvPhone;
+    private TextView tvEmail;
+    private ImageView ivContactPhoto;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_display_card);
-        tv_name =  (TextView) findViewById(R.id.tv_name);
-        tv_phone =  (TextView) findViewById(R.id.tv_phone);
-        tv_email =  (TextView) findViewById(R.id.tv_email);
+        tvName =  (TextView) findViewById(R.id.tv_name);
+        tvPhone =  (TextView) findViewById(R.id.tv_phone);
+        tvEmail =  (TextView) findViewById(R.id.tv_email);
+        ivContactPhoto = (ImageView) findViewById(R.id.iv_contact_photo);
+
 
         Intent intent = getIntent();
-        if (intent != null && intent.getStringExtra(ApplicationConstants.EXTRA_CONTACT_DETAILS) != null) {
-            String receivedString = intent.getStringExtra(ApplicationConstants.EXTRA_CONTACT_DETAILS);
-            ContactDetails cd = JsonConverter.toConcatDetails(receivedString);
-            Log.d(TAG, String.format("Displayed card: %s", cd.toString()));
-            tv_name.setText(cd.getName());
-            tv_phone.setText(cd.getPhone());
-            if (cd.getEmail() != null) {
-                tv_email.setText(cd.getEmail());
-            }
+        if (intent != null && intent.getIntExtra(ApplicationConstants.EXTRA_CONTACT_LOCAL_ID, -1) > -1) {
+            Integer contactLocalId = intent.getIntExtra(ApplicationConstants.EXTRA_CONTACT_LOCAL_ID, -1);
+           new FetchContactDetailsAsyncTask().execute(contactLocalId);
+        } else {
+            Log.e(TAG, "couldn't fetch the right id from intent");
         }
 
     }
@@ -69,8 +69,8 @@ public class DisplayCardActivity extends Activity {
     private void sendEmail(){
         Intent intent = new Intent(Intent.ACTION_SENDTO);
         intent.setData(Uri.parse("mailto:"));
-        Log.d(TAG, String.format("Email: %s", tv_email.getText().toString()));
-        intent.putExtra(Intent.EXTRA_EMAIL, tv_email.getText().toString());
+        Log.d(TAG, String.format("Email: %s", tvEmail.getText().toString()));
+        intent.putExtra(Intent.EXTRA_EMAIL, tvEmail.getText().toString());
         intent.putExtra(Intent.EXTRA_SUBJECT, "Hello there!");
         if (intent.resolveActivity(getPackageManager()) != null) {
             startActivity(Intent.createChooser(intent, "Send Email"));
@@ -83,9 +83,9 @@ public class DisplayCardActivity extends Activity {
      * This method calls phone number using intent.
      */
     private void callPhone(){
-        Log.d(TAG, String.format("Phone: %s", tv_phone.getText().toString()));
+        Log.d(TAG, String.format("Phone: %s", tvPhone.getText().toString()));
         Intent intent = new Intent(Intent.ACTION_DIAL);
-        intent.setData(Uri.fromParts("tel", tv_phone.getText().toString(), null));
+        intent.setData(Uri.fromParts("tel", tvPhone.getText().toString(), null));
         if(intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
         } else {
@@ -97,9 +97,9 @@ public class DisplayCardActivity extends Activity {
      * This method sends an sms using intent.
      */
     private void sendSms(){
-        Log.d(TAG, String.format("Phone: %s", tv_phone.getText().toString()));
+        Log.d(TAG, String.format("Phone: %s", tvPhone.getText().toString()));
         Intent intent = new Intent(Intent.ACTION_VIEW, Uri.fromParts("sms",
-                tv_phone.getText().toString(),
+                tvPhone.getText().toString(),
                 null));
         if(intent.resolveActivity(getPackageManager()) != null) {
             startActivity(intent);
@@ -110,17 +110,33 @@ public class DisplayCardActivity extends Activity {
 
         }
     }
-//    @Override
-//    public void onNewIntent(Intent intent) {
-//        Gson gson=new Gson();
-//        String receivedString = intent.getStringExtra(SigninActivity.EXTRA_MESSAGE);
-//        ContactDetails cd =  gson.fromJson(receivedString, ContactDetails.class);
-//        String s = cd.toString();
-//        Log.d("displaycard test: ", s);
-//        tv_name.setText(cd.getName());
-//        tv_phone.setText(cd.getPhone());
-//        tv_email.setText(cd.getEmail());
-//
-//    }
 
+    private class FetchContactDetailsAsyncTask extends AsyncTask<Integer, Integer, ContactDetails> {
+
+        @Override
+        protected ContactDetails doInBackground(Integer... integers) {
+            Integer contactLocalId = integers[0];
+            DBHelper dbHelper = new DBHelper(getApplicationContext());
+            ContactDetails cd = dbHelper.getContact(contactLocalId);
+            if (cd == null) {
+                Log.d(TAG, String.format("Coouldn't fetch contact details for %d", contactLocalId));
+            }
+            dbHelper.close();
+            return cd;
+        }
+
+        @Override
+        protected void onPostExecute(ContactDetails contactDetails){
+            if (contactDetails != null) {
+                tvName.setText(contactDetails.getName());
+                tvPhone.setText(contactDetails.getPhone());
+                if (contactDetails.getEmail() != null) {
+                    tvEmail.setText(contactDetails.getEmail());
+                }
+                if (contactDetails.getPhoto() != null) {
+                    ivContactPhoto.setImageBitmap(contactDetails.getPhoto());
+                }
+            }
+        }
+    }
 }

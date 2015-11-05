@@ -8,13 +8,11 @@ import android.graphics.Bitmap;
 import com.contactsharing.beamit.resources.contact.Contact;
 import com.contactsharing.beamit.resources.user.User;
 
-import java.util.Date;
-
 public class ContactDetails implements Model {
     // This id will be provided by the SQLite.
     // It is auto-increment.
-    private Long id;
-    private Long contactId;
+    private Integer id;
+    private Integer contactId;
     private String name;
     private String phone;
     private String email;
@@ -29,7 +27,7 @@ public class ContactDetails implements Model {
         //Required by the system.
     }
 
-    public ContactDetails(Long contactId,
+    public ContactDetails(Integer contactId,
                           String name,
                           String phone,
                           String email,
@@ -38,11 +36,11 @@ public class ContactDetails implements Model {
                           Bitmap photo,
                           boolean synced) {
         //Passing ID as zero, this value will be ignored later.
-        this(0L, contactId, name, phone, email, company, linkedinUrl, photo, synced);
+        this(0, contactId, name, phone, email, company, linkedinUrl, photo, synced);
     }
 
-    public ContactDetails(Long id,
-                          Long contactId,
+    public ContactDetails(Integer id,
+                          Integer contactId,
                           String name,
                           String phone,
                           String email,
@@ -62,11 +60,11 @@ public class ContactDetails implements Model {
         this.synced = synced;
     }
 
-    public Long getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
@@ -112,11 +110,11 @@ public class ContactDetails implements Model {
         return this.linkedinUrl;
     }
 
-    public Long getContactId() {
+    public Integer getContactId() {
         return contactId;
     }
 
-    public void setContactId(Long contactId) {
+    public void setContactId(Integer contactId) {
         this.contactId = contactId;
     }
 
@@ -146,7 +144,7 @@ public class ContactDetails implements Model {
 
     /**
      * This method convert `User` resource to ContactDetails object.
-     * @param contact
+     * @param user
      * @return
      */
     public static ContactDetails fromUser(User user){

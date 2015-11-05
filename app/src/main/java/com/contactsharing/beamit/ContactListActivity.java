@@ -314,7 +314,7 @@ public class ContactListActivity extends ActionBarActivity {
 
             if (name != null && !name.isEmpty()) {
                 ContactDetails contactDetails = new ContactDetails(
-                        0L,
+                        0,
                         name,
                         phoneNumber,
                         email,
@@ -336,8 +336,8 @@ public class ContactListActivity extends ActionBarActivity {
     private void showContactDetails(ContactDetails contactDetails){
         Log.d(TAG, String.format("showContactDetails() contactDetails: %s", contactDetails.toString()));
         Intent intent = new Intent(this, DisplayCardActivity.class);
-        intent.putExtra(ApplicationConstants.EXTRA_CONTACT_DETAILS,
-                JsonConverter.toJson(contactDetails));
+        intent.putExtra(ApplicationConstants.EXTRA_CONTACT_LOCAL_ID,
+                contactDetails.getId());
         startActivity(intent);
     }
 

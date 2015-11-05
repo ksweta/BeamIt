@@ -93,13 +93,13 @@ public class DBHelper extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public long insertContact(ContactDetails contact) {
+    public Integer insertContact(ContactDetails contact) {
 
-        long result = getWritableDatabase().insert(DBHelper.TABLE_NAME_CONTACTS,
+         Long result = getWritableDatabase().insert(DBHelper.TABLE_NAME_CONTACTS,
                 null,
                 getValues(contact));
         Log.d(TAG, "InsertData->result : " + result);
-        return result;
+        return result.intValue();
     }
 
 
@@ -114,6 +114,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 DBHelper.COLUMN_EMAIL,
                 DBHelper.COLUMN_COMPANY,
                 DBHelper.COLUMN_LINKEDIN_URL,
+                DBHelper.COLUMN_PHOTO,
                 DBHelper.COLUMN_SYNC};
 
         Cursor cursor = getReadableDatabase().query(DBHelper.TABLE_NAME_CONTACTS,
@@ -136,20 +137,23 @@ public class DBHelper extends SQLiteOpenHelper {
             int emailColIndex = cursor.getColumnIndex(DBHelper.COLUMN_EMAIL);
             int companyIndex = cursor.getColumnIndex(DBHelper.COLUMN_COMPANY);
             int linkedinUrlIndex = cursor.getColumnIndex(DBHelper.COLUMN_LINKEDIN_URL);
+            int photoIndex = cursor.getColumnIndex(DBHelper.COLUMN_PHOTO);
             int syncIndex = cursor.getColumnIndex(DBHelper.COLUMN_SYNC);
 
 
             while (cursor.moveToNext()) {
                 //simpleDateFormat.parse() throws exception, necessary to have try-catch block here.
                 try {
-                    ContactDetails contact = new ContactDetails(cursor.getLong(idColIndex),
-                            cursor.getLong(contactIdIndex),
+                    byte[] rowPhoto = cursor.getBlob(photoIndex);
+                    Bitmap photo = rowPhoto == null? null : BitmapFactory.decodeByteArray(rowPhoto, 0, rowPhoto.length);
+                    ContactDetails contact = new ContactDetails(cursor.getInt(idColIndex),
+                            cursor.getInt(contactIdIndex),
                             cursor.getString(nameColIndex),
                             cursor.getString(phoneColIndex),
                             cursor.getString(emailColIndex),
                             cursor.getString(companyIndex),
                             cursor.getString(linkedinUrlIndex),
-                            null,
+                            photo,
                             cursor.getInt(syncIndex) == 1);
 
                     contactList.add(contact);
@@ -214,6 +218,65 @@ public class DBHelper extends SQLiteOpenHelper {
         }
     }
 
+    public ContactDetails getContact(Integer contactLocalId){
+
+        //Get all columns from Contacts  table.
+        String[] allColumns = new String[]{DBHelper.COLUMN_ID,
+                DBHelper.COLUMN_CONTACT_ID,
+                DBHelper.COLUMN_NAME,
+                DBHelper.COLUMN_PHONE,
+                DBHelper.COLUMN_EMAIL,
+                DBHelper.COLUMN_COMPANY,
+                DBHelper.COLUMN_LINKEDIN_URL,
+                DBHelper.COLUMN_PHOTO,
+                DBHelper.COLUMN_SYNC};
+        String[] selectionArgs = new String[]{contactLocalId.toString()};
+        Cursor cursor = null;
+        try {
+
+            cursor = getReadableDatabase().query(DBHelper.TABLE_NAME_CONTACTS,
+                    allColumns,
+                    DBHelper.COLUMN_ID + "=?",
+                    selectionArgs,
+                    null,
+                    null,
+                    null);
+            if (cursor == null) {
+                Log.e(TAG, "isContactPresent(): Serious problem, cursor is null");
+            }
+            if (cursor.getCount() > 0) {
+
+                cursor.moveToFirst();
+                // Get the index of the various columns. This helps to get
+                // the column value from the cursor object.
+                int idColIndex = cursor.getColumnIndex(DBHelper.COLUMN_ID);
+                int nameColIndex = cursor.getColumnIndex(DBHelper.COLUMN_NAME);
+                int phoneColIndex = cursor.getColumnIndex(DBHelper.COLUMN_PHONE);
+                int emailColIndex = cursor.getColumnIndex(DBHelper.COLUMN_EMAIL);
+                int companyIndex = cursor.getColumnIndex(DBHelper.COLUMN_COMPANY);
+                int linkedinUrlIndex = cursor.getColumnIndex(DBHelper.COLUMN_LINKEDIN_URL);
+                int photoIndex = cursor.getColumnIndex(DBHelper.COLUMN_PHOTO);
+                int syncIndex = cursor.getColumnIndex(DBHelper.COLUMN_SYNC);
+
+                byte[] rowPhoto = cursor.getBlob(photoIndex);
+                Bitmap photo = rowPhoto == null? null : BitmapFactory.decodeByteArray(rowPhoto, 0, rowPhoto.length);
+                return new ContactDetails(cursor.getInt(idColIndex),
+                        cursor.getString(nameColIndex),
+                        cursor.getString(phoneColIndex),
+                        cursor.getString(emailColIndex),
+                        cursor.getString(companyIndex),
+                        cursor.getString(linkedinUrlIndex),
+                        photo,
+                        cursor.getInt(syncIndex) == 1);
+            } else {
+                return null;
+            }
+        } finally {
+            if (cursor != null) {
+                cursor.close();
+            }
+        }
+    }
     /**
      * This is a helper method to convert ContactDetails object to ContentValues
      * This contentValues object is used in various CRUD methods.
@@ -281,7 +344,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 try {
                     byte[] rowPhoto = cursor.getBlob(photoIndex);
                     Bitmap photo = rowPhoto == null? null : BitmapFactory.decodeByteArray(rowPhoto, 0, rowPhoto.length);
-                    ContactDetails contact = new ContactDetails(cursor.getLong(idColIndex),
+                    ContactDetails contact = new ContactDetails(cursor.getInt(idColIndex),
                             cursor.getString(nameColIndex),
                             cursor.getString(phoneColIndex),
                             cursor.getString(emailColIndex),
