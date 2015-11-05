@@ -28,7 +28,7 @@ public interface BeamItService {
     @POST("/api/contact")
     Call<Contact> createContact(@Body Contact contact);
 
-    @GET("/api/contact/{contactId")
+    @GET("/api/contact/{contactId}")
     Call<Contact> getContact(@Path("contactId") Integer contactId);
 
     @DELETE("/api/contact/{contactId}")

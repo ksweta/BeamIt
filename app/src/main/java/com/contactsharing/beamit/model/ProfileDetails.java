@@ -20,8 +20,8 @@ public class ProfileDetails {
     private String linkedinUrl;
     private Bitmap photo;
 
-    //When profile detail was synced last time.
-    private Date syncDate;
+    //indiates whether profile details are sync with server or not.
+    private boolean sync;
 
     public ProfileDetails(){
         //Required by the system.
@@ -35,7 +35,7 @@ public class ProfileDetails {
      */
     public ProfileDetails(Long userId, String email){
 
-        this(null, userId, null, null, email, null, null, null, null);
+        this(null, userId, null, null, email, null, null, null, false);
     }
 
     public ProfileDetails(Long id,
@@ -46,7 +46,7 @@ public class ProfileDetails {
                           String company,
                           String linkedinUrl,
                           Bitmap photo,
-                          Date syncDate) {
+                          boolean sync) {
         super();
         if (id == null) {
             this.id = 1L;
@@ -60,7 +60,7 @@ public class ProfileDetails {
         this.company = company;
         this.linkedinUrl = linkedinUrl;
         this.photo = photo;
-        this.syncDate = syncDate;
+        this.sync = sync;
     }
 
     public Long getId() { return id; }
@@ -123,12 +123,12 @@ public class ProfileDetails {
         this.photo = photo;
     }
 
-    public Date getSyncDate() {
-        return syncDate;
+    public boolean isSync() {
+        return sync;
     }
 
-    public void setSyncDate(Date syncDate) {
-        this.syncDate = syncDate;
+    public void setSync(boolean sync) {
+        this.sync = sync;
     }
 
     @Override
@@ -138,46 +138,46 @@ public class ProfileDetails {
 
         ProfileDetails that = (ProfileDetails) o;
 
-        if (!getId().equals(that.getId())) return false;
+        if (isSync() != that.isSync()) return false;
+        if (getId() != null ? !getId().equals(that.getId()) : that.getId() != null) return false;
         if (getUserId() != null ? !getUserId().equals(that.getUserId()) : that.getUserId() != null)
             return false;
         if (getName() != null ? !getName().equals(that.getName()) : that.getName() != null)
             return false;
         if (getPhone() != null ? !getPhone().equals(that.getPhone()) : that.getPhone() != null)
             return false;
-        if (!getEmail().equals(that.getEmail())) return false;
+        if (getEmail() != null ? !getEmail().equals(that.getEmail()) : that.getEmail() != null)
+            return false;
         if (getCompany() != null ? !getCompany().equals(that.getCompany()) : that.getCompany() != null)
             return false;
-        if (getLinkedinUrl() != null ? !getLinkedinUrl().equals(that.getLinkedinUrl()) : that.getLinkedinUrl() != null)
-            return false;
-        return !(getSyncDate() != null ? !getSyncDate().equals(that.getSyncDate()) : that.getSyncDate() != null);
+        return !(getLinkedinUrl() != null ? !getLinkedinUrl().equals(that.getLinkedinUrl()) : that.getLinkedinUrl() != null);
 
     }
 
     @Override
     public int hashCode() {
-        int result = getId().hashCode();
+        int result = getId() != null ? getId().hashCode() : 0;
         result = 31 * result + (getUserId() != null ? getUserId().hashCode() : 0);
         result = 31 * result + (getName() != null ? getName().hashCode() : 0);
         result = 31 * result + (getPhone() != null ? getPhone().hashCode() : 0);
-        result = 31 * result + getEmail().hashCode();
+        result = 31 * result + (getEmail() != null ? getEmail().hashCode() : 0);
         result = 31 * result + (getCompany() != null ? getCompany().hashCode() : 0);
         result = 31 * result + (getLinkedinUrl() != null ? getLinkedinUrl().hashCode() : 0);
-        result = 31 * result + (getSyncDate() != null ? getSyncDate().hashCode() : 0);
+        result = 31 * result + (isSync() ? 1 : 0);
         return result;
     }
 
     @Override
     public String toString() {
         return "ProfileDetails{" +
-                "linkedinUrl='" + linkedinUrl + '\'' +
-                ", company='" + company + '\'' +
-                ", email='" + email + '\'' +
-                ", phone='" + phone + '\'' +
-                ", name='" + name + '\'' +
+                "id=" + id +
                 ", userId=" + userId +
-                ", id=" + id +
-                ", syncDate=" + syncDate +
+                ", name='" + name + '\'' +
+                ", phone='" + phone + '\'' +
+                ", email='" + email + '\'' +
+                ", company='" + company + '\'' +
+                ", linkedinUrl='" + linkedinUrl + '\'' +
+                ", sync=" + sync +
                 '}';
     }
 }

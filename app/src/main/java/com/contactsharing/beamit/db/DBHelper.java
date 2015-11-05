@@ -39,7 +39,7 @@ public class DBHelper extends SQLiteOpenHelper {
     public static final String COLUMN_COMPANY = "company";
     public static final String COLUMN_LINKEDIN_URL = "linkedinUrl";
     public static final String COLUMN_PHOTO = "photo";
-    public static final String COLUMN_SYNC_DATE = "syncDate";
+    public static final String COLUMN_SYNC = "sync";
     public static final String COLUMN_USER_ID = "userId";
     private static final String DATABASE_NAME = "beamit.db";
     private static final int DATABASE_VERSION = 1;
@@ -59,7 +59,7 @@ public class DBHelper extends SQLiteOpenHelper {
             + COLUMN_COMPANY + " TEXT, "
             + COLUMN_LINKEDIN_URL + " TEXT, "
             + COLUMN_PHOTO + " BLOB, "
-            + COLUMN_SYNC_DATE + " TEXT NOT NULL);";
+            + COLUMN_SYNC + " BOOLEAN);";
 
     private static final String DATABASE_CREATE_PROFILE_TABLE = "CREATE TABLE " + TABLE_NAME_PROFILE +
             "(" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -70,7 +70,7 @@ public class DBHelper extends SQLiteOpenHelper {
             + COLUMN_COMPANY + " TEXT, "
             + COLUMN_LINKEDIN_URL + " TEXT, "
             + COLUMN_PHOTO + " BLOB, "
-            + COLUMN_SYNC_DATE + " TEXT);";
+            + COLUMN_SYNC + " BOOLEAN);";
 
     public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -114,7 +114,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 DBHelper.COLUMN_EMAIL,
                 DBHelper.COLUMN_COMPANY,
                 DBHelper.COLUMN_LINKEDIN_URL,
-                DBHelper.COLUMN_SYNC_DATE};
+                DBHelper.COLUMN_SYNC};
 
         Cursor cursor = getReadableDatabase().query(DBHelper.TABLE_NAME_CONTACTS,
                 allColumns,
@@ -136,7 +136,7 @@ public class DBHelper extends SQLiteOpenHelper {
             int emailColIndex = cursor.getColumnIndex(DBHelper.COLUMN_EMAIL);
             int companyIndex = cursor.getColumnIndex(DBHelper.COLUMN_COMPANY);
             int linkedinUrlIndex = cursor.getColumnIndex(DBHelper.COLUMN_LINKEDIN_URL);
-            int syncDateIndex = cursor.getColumnIndex(DBHelper.COLUMN_SYNC_DATE);
+            int syncIndex = cursor.getColumnIndex(DBHelper.COLUMN_SYNC);
 
 
             while (cursor.moveToNext()) {
@@ -150,7 +150,7 @@ public class DBHelper extends SQLiteOpenHelper {
                             cursor.getString(companyIndex),
                             cursor.getString(linkedinUrlIndex),
                             null,
-                            simpleDateFormat.parse(cursor.getString(syncDateIndex)));
+                            cursor.getInt(syncIndex) == 1);
 
                     contactList.add(contact);
                 } catch (Exception e) {
@@ -230,7 +230,11 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put(DBHelper.COLUMN_COMPANY, contact.getCompany());
         values.put(DBHelper.COLUMN_LINKEDIN_URL, contact.getLinkedinUrl());
         values.put(DBHelper.COLUMN_PHOTO, BitmapUtility.getBitmapToBytes(contact.getPhoto()));
-        values.put(DBHelper.COLUMN_SYNC_DATE, simpleDateFormat.format(contact.getSyncDate()));
+        if (contact.isSynced()) {
+            values.put(DBHelper.COLUMN_SYNC, 1);
+        } else {
+            values.put(DBHelper.COLUMN_SYNC, 0);
+        }
         return values;
     }
 
@@ -244,7 +248,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 DBHelper.COLUMN_COMPANY,
                 DBHelper.COLUMN_LINKEDIN_URL,
                 DBHelper.COLUMN_PHOTO,
-                DBHelper.COLUMN_SYNC_DATE};
+                DBHelper.COLUMN_SYNC};
 
         String[] selectionArgs = new String[]{"%" + query + "%"};
         //Cursor cursor = null;
@@ -269,7 +273,7 @@ public class DBHelper extends SQLiteOpenHelper {
             int companyIndex = cursor.getColumnIndex(DBHelper.COLUMN_COMPANY);
             int linkedinUrlIndex = cursor.getColumnIndex(DBHelper.COLUMN_LINKEDIN_URL);
             int photoIndex = cursor.getColumnIndex(DBHelper.COLUMN_PHOTO);
-            int syncDateIndex = cursor.getColumnIndex(DBHelper.COLUMN_SYNC_DATE);
+            int syncIndex = cursor.getColumnIndex(DBHelper.COLUMN_SYNC);
 
 
             while (cursor.moveToNext()) {
@@ -284,7 +288,7 @@ public class DBHelper extends SQLiteOpenHelper {
                             cursor.getString(companyIndex),
                             cursor.getString(linkedinUrlIndex),
                             photo,
-                            simpleDateFormat.parse(cursor.getString(syncDateIndex)));
+                            cursor.getInt(syncIndex) == 1);
 
                     contactList.add(contact);
                 } catch (Exception e) {
@@ -324,7 +328,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 DBHelper.COLUMN_COMPANY,
                 DBHelper.COLUMN_LINKEDIN_URL,
                 DBHelper.COLUMN_PHOTO,
-                DBHelper.COLUMN_SYNC_DATE};
+                DBHelper.COLUMN_SYNC};
 
         Cursor cursor = getReadableDatabase().query(DBHelper.TABLE_NAME_PROFILE,
                 allColumns,
@@ -350,14 +354,13 @@ public class DBHelper extends SQLiteOpenHelper {
             int companyIndex = cursor.getColumnIndex(DBHelper.COLUMN_COMPANY);
             int linkedinUrlIndex = cursor.getColumnIndex(DBHelper.COLUMN_LINKEDIN_URL);
             int photoIndex = cursor.getColumnIndex(DBHelper.COLUMN_PHOTO);
-            int syncDateIndex = cursor.getColumnIndex(DBHelper.COLUMN_SYNC_DATE);
+            int syncIndex = cursor.getColumnIndex(DBHelper.COLUMN_SYNC);
 
 
             //simpleDateFormat.parse() throws exception, necessary to have try-catch block here.
             try {
                 byte[] rowPhoto = cursor.getBlob(photoIndex);
                 Bitmap photo = rowPhoto == null? null : BitmapFactory.decodeByteArray(rowPhoto, 0, rowPhoto.length);
-                String syncDate = cursor.getString(syncDateIndex);
                 ProfileDetails profileDetails = new ProfileDetails(cursor.getLong(idColIndex),
                         cursor.getLong(userIdColIndex),
                         cursor.getString(nameColIndex),
@@ -366,7 +369,7 @@ public class DBHelper extends SQLiteOpenHelper {
                         cursor.getString(companyIndex),
                         cursor.getString(linkedinUrlIndex),
                         photo,
-                        syncDate == null? null : simpleDateFormat.parse(syncDate));
+                        cursor.getInt(syncIndex) == 1);
 
                 return profileDetails;
             } catch (Exception e) {
@@ -379,8 +382,6 @@ public class DBHelper extends SQLiteOpenHelper {
         }
         return null;
     }
-
-
 
     /**
      * This is a helper method to convert ProfileDetails object to ContentValues
@@ -402,10 +403,11 @@ public class DBHelper extends SQLiteOpenHelper {
 
         values.put(DBHelper.COLUMN_PHOTO,
                 BitmapUtility.getBitmapToBytes(profileDetails.getPhoto()));
-        values.put(DBHelper.COLUMN_SYNC_DATE,
-                profileDetails.getSyncDate() == null ? null : simpleDateFormat.format(profileDetails.getSyncDate()));
+        if(profileDetails.isSync()) {
+            values.put(DBHelper.COLUMN_SYNC, 1);
+        } else {
+            values.put(DBHelper.COLUMN_SYNC, 0);
+        }
         return values;
     }
-
-
 }

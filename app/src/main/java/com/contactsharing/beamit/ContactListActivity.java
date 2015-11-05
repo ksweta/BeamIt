@@ -18,6 +18,7 @@ import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.NfcA;
 import android.nfc.tech.NfcF;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Parcelable;
@@ -41,16 +42,27 @@ import android.view.MenuItem;
 import com.contactsharing.beamit.db.DBHelper;
 import com.contactsharing.beamit.model.ContactDetails;
 import com.contactsharing.beamit.model.ProfileDetails;
+import com.contactsharing.beamit.resources.contact.Contact;
+import com.contactsharing.beamit.resources.user.User;
+import com.contactsharing.beamit.transport.BeamItService;
+import com.contactsharing.beamit.transport.BeamItServiceTransport;
 import com.contactsharing.beamit.utility.ApplicationConstants;
+import com.contactsharing.beamit.utility.BitmapUtility;
 import com.contactsharing.beamit.utility.JsonConverter;
 import com.google.gson.Gson;
+import com.squareup.okhttp.ResponseBody;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
+
+import retrofit.Call;
+import retrofit.Response;
 
 public class ContactListActivity extends ActionBarActivity {
     private static final String TAG = ContactListActivity.class.getSimpleName();
@@ -197,6 +209,8 @@ public class ContactListActivity extends ActionBarActivity {
             }
         }
         Toast.makeText(this, "Received string: " + receivedString, Toast.LENGTH_LONG).show();
+        Integer sharedContactId = Integer.parseInt(receivedString);
+        new DownloadSharedContactTask().execute(sharedContactId);
     }
 
     @Override
@@ -299,13 +313,17 @@ public class ContactListActivity extends ActionBarActivity {
             cursor.close();
 
             if (name != null && !name.isEmpty()) {
-                saveNewContact(0L,
+                ContactDetails contactDetails = new ContactDetails(
+                        0L,
                         name,
                         phoneNumber,
                         email,
-                        "", //company name,
-                        "", //linkedin url,
-                        null);
+                        "",             // TODO:  Company
+                        "",             // TODO:  Linkedin url
+                        null,           // TODO: Contact photo.
+                        false);
+
+                saveNewContact(contactDetails);
                 Log.d(TAG, String.format("name: %s, email: %s", name, email));
             }
         }
@@ -346,26 +364,10 @@ public class ContactListActivity extends ActionBarActivity {
     /**
      * This is a helper method to save the contact in contact list.
      *
-     * @param name Contact name.
      */
-    private void saveNewContact(Long contactId,
-                                String name,
-                                String phoneNumber,
-                                String email,
-                                String company,
-                                String linkedinUrl,
-                                Bitmap photo) {
-        ContactDetails contact = new ContactDetails(
-                contactId,
-                name,
-                phoneNumber,
-                email,
-                company,        // TODO:  Company
-                linkedinUrl,    // TODO:  Linkedin url
-                photo,          // TODO: Contact photo.
-                new Date());
+    private void saveNewContact(ContactDetails contactDetails) {
 
-        if ( mContactNamesRecyclerViewAdapter.add(contact)) {
+        if ( mContactNamesRecyclerViewAdapter.add(contactDetails)) {
             //Notify user.
             Toast.makeText(this, "Contact added successfully", Toast.LENGTH_SHORT).show();
             Log.i(TAG, "Contact added successfully");
@@ -459,6 +461,62 @@ public class ContactListActivity extends ActionBarActivity {
             result.append(']');
         }
         Log.d(TAG, String.format("2DString=> %s", result));
+    }
+
+    /**
+     * Async task to download contacts
+     */
+    private class DownloadSharedContactTask extends AsyncTask<Integer, Integer, ContactDetails>{
+
+        @Override
+        protected ContactDetails doInBackground(Integer... integers) {
+            Integer sharedContactId = integers[0];
+            BeamItService service = BeamItServiceTransport.getService();
+            Call<User> contactCall = service.getUpserProfile(sharedContactId);
+            Response<User> userResponse;
+            try {
+              userResponse = contactCall.execute();
+            } catch (IOException e) {
+                Log.e(TAG, "Error while fetching contact", e);
+                return null;
+            }
+            if (userResponse.code() != HttpURLConnection.HTTP_OK){
+                Log.i(TAG, String.format("Couldn't get contact details => code: %d, response: %s",
+                        userResponse.code(),
+                        userResponse.body()));
+                return null;
+            }
+            ContactDetails contactDetails = ContactDetails.fromUser(userResponse.body());
+
+            //Download contact photo
+
+            Call<ResponseBody> responseCall = service.downloadUserProfilePhoto(sharedContactId);
+            Response<ResponseBody> response;
+            try {
+                response = responseCall.execute();
+            } catch(IOException e){
+                Log.e(TAG, "Coudln't get contact photo ",e);
+                response = null;
+            }
+            if (response.code() != HttpURLConnection.HTTP_OK){
+                Log.i(TAG, String.format("Coudln't get contact photo => code: %d", response.code()));
+            } else {
+
+                try {
+                    contactDetails.setPhoto(BitmapUtility.getBytesToBitmap(response.body().bytes()));
+                } catch (IOException e) {
+                    Log.e(TAG, "couldn't fetch image", e);
+                }
+            }
+            return contactDetails;
+        }
+
+        @Override
+        protected void onPostExecute(ContactDetails contactDetails){
+            if (contactDetails != null) {
+                saveNewContact(contactDetails);
+            }
+        }
     }
 }
 

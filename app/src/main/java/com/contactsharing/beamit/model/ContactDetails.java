@@ -5,6 +5,9 @@ package com.contactsharing.beamit.model;
  */
 import android.graphics.Bitmap;
 
+import com.contactsharing.beamit.resources.contact.Contact;
+import com.contactsharing.beamit.resources.user.User;
+
 import java.util.Date;
 
 public class ContactDetails implements Model {
@@ -18,9 +21,9 @@ public class ContactDetails implements Model {
     private String company;
     private String linkedinUrl;
     private Bitmap photo;
+    // indicates whether contact is synced with server or not.
+    private boolean synced;
 
-    //When this contact was last synced with server.
-    private Date syncDate;
 
     public ContactDetails() {
         //Required by the system.
@@ -33,9 +36,9 @@ public class ContactDetails implements Model {
                           String company,
                           String linkedinUrl,
                           Bitmap photo,
-                          Date syncDate) {
+                          boolean synced) {
         //Passing ID as zero, this value will be ignored later.
-        this(0L, contactId, name, phone, email, company, linkedinUrl, photo, syncDate);
+        this(0L, contactId, name, phone, email, company, linkedinUrl, photo, synced);
     }
 
     public ContactDetails(Long id,
@@ -46,7 +49,7 @@ public class ContactDetails implements Model {
                           String company,
                           String linkedinUrl,
                           Bitmap photo,
-                          Date syncDate) {
+                          boolean synced) {
         super();
         this.id = id;
         this.contactId = contactId;
@@ -56,7 +59,7 @@ public class ContactDetails implements Model {
         this.company = company;
         this.linkedinUrl = linkedinUrl;
         this.photo = photo;
-        this.syncDate = syncDate;
+        this.synced = synced;
     }
 
     public Long getId() {
@@ -109,11 +112,6 @@ public class ContactDetails implements Model {
         return this.linkedinUrl;
     }
 
-    public Date getSyncDate() { return syncDate; }
-
-    public void setSyncDate(Date syncDate) { this.syncDate = syncDate;}
-
-
     public Long getContactId() {
         return contactId;
     }
@@ -122,6 +120,45 @@ public class ContactDetails implements Model {
         this.contactId = contactId;
     }
 
+    public boolean isSynced() {
+        return synced;
+    }
+
+    public void setSynced(boolean synced) {
+        this.synced = synced;
+    }
+
+    /**
+     * This method convert `Contact` resource to ContactDetails object.
+     * @param contact
+     * @return
+     */
+    public static ContactDetails fromContact(Contact contact){
+        ContactDetails contactDetails = new ContactDetails();
+        contactDetails.setName(contact.getName());
+        contactDetails.setEmail(contact.getEmail());
+        contactDetails.setPhone(contact.getPhone());
+        contactDetails.setCompany(contact.getCompany());
+        contactDetails.setLinkedinUrl(contact.getLinkedinUrl());
+
+        return contactDetails;
+    }
+
+    /**
+     * This method convert `User` resource to ContactDetails object.
+     * @param contact
+     * @return
+     */
+    public static ContactDetails fromUser(User user){
+        ContactDetails contactDetails = new ContactDetails();
+        contactDetails.setName(user.getName());
+        contactDetails.setEmail(user.getEmail());
+        contactDetails.setPhone(user.getPhone());
+        contactDetails.setCompany(user.getCompany());
+        contactDetails.setLinkedinUrl(user.getLinkedinUrl());
+
+        return contactDetails;
+    }
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -129,6 +166,7 @@ public class ContactDetails implements Model {
 
         ContactDetails that = (ContactDetails) o;
 
+        if (synced != that.synced) return false;
         if (getId() != null ? !getId().equals(that.getId()) : that.getId() != null) return false;
         if (getContactId() != null ? !getContactId().equals(that.getContactId()) : that.getContactId() != null)
             return false;
@@ -140,9 +178,7 @@ public class ContactDetails implements Model {
             return false;
         if (getCompany() != null ? !getCompany().equals(that.getCompany()) : that.getCompany() != null)
             return false;
-        if (getLinkedinUrl() != null ? !getLinkedinUrl().equals(that.getLinkedinUrl()) : that.getLinkedinUrl() != null)
-            return false;
-        return !(getSyncDate() != null ? !getSyncDate().equals(that.getSyncDate()) : that.getSyncDate() != null);
+        return !(getLinkedinUrl() != null ? !getLinkedinUrl().equals(that.getLinkedinUrl()) : that.getLinkedinUrl() != null);
 
     }
 
@@ -155,7 +191,7 @@ public class ContactDetails implements Model {
         result = 31 * result + (getEmail() != null ? getEmail().hashCode() : 0);
         result = 31 * result + (getCompany() != null ? getCompany().hashCode() : 0);
         result = 31 * result + (getLinkedinUrl() != null ? getLinkedinUrl().hashCode() : 0);
-        result = 31 * result + (getSyncDate() != null ? getSyncDate().hashCode() : 0);
+        result = 31 * result + (synced ? 1 : 0);
         return result;
     }
 
@@ -169,7 +205,7 @@ public class ContactDetails implements Model {
                 ", email='" + email + '\'' +
                 ", company='" + company + '\'' +
                 ", linkedinUrl='" + linkedinUrl + '\'' +
-                ", syncDate=" + syncDate +
+                ", synced=" + synced +
                 '}';
     }
 }
