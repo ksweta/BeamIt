@@ -16,13 +16,11 @@ import android.widget.Toast;
 
 import com.contactsharing.beamit.db.DBHelper;
 import com.contactsharing.beamit.model.ProfileDetails;
-import com.contactsharing.beamit.resources.signin.SigninRequest;
-import com.contactsharing.beamit.resources.signin.SigninResponse;
+import com.contactsharing.beamit.resources.user.User;
 import com.contactsharing.beamit.transport.BeamItService;
 import com.contactsharing.beamit.transport.BeamItServiceTransport;
 import com.contactsharing.beamit.utility.BitmapUtility;
 import com.contactsharing.beamit.utility.UtilityMethods;
-import com.squareup.okhttp.Headers;
 import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.MultipartBuilder;
 import com.squareup.okhttp.RequestBody;
@@ -34,11 +32,11 @@ import org.apache.http.HttpStatus;
 import org.brickred.socialauth.Profile;
 import org.brickred.socialauth.android.DialogListener;
 import org.brickred.socialauth.android.SocialAuthAdapter;
-import org.brickred.socialauth.android.SocialAuthAdapter.Provider;
 import org.brickred.socialauth.android.SocialAuthError;
 import org.brickred.socialauth.android.SocialAuthListener;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -59,6 +57,7 @@ public class EditProfileActivity extends Activity {
     private ImageView ivProfilePhoto;
     private EditText etName;
     private EditText etEmail;
+    private EditText etPhone;
     private EditText etCompany;
     private EditText etLinkeninUrl;
     private ProfileDetails mProfileDetails;
@@ -76,6 +75,7 @@ public class EditProfileActivity extends Activity {
         ivProfilePhoto = (ImageView) findViewById(R.id.iv_profile_photo);
         etName = (EditText) findViewById(R.id.et_name);
         etEmail = (EditText) findViewById(R.id.et_email);
+        etPhone = (EditText) findViewById(R.id.et_phone);
         etCompany = (EditText) findViewById(R.id.et_company);
         etLinkeninUrl = (EditText) findViewById(R.id.et_linkedin_url);
 
@@ -90,16 +90,29 @@ public class EditProfileActivity extends Activity {
 
     }
 
-    private void updateUI() {
-        if (mProfileDetails != null) {
-            if (mProfileDetails.getPhoto() != null) {
-                ivProfilePhoto.setImageBitmap(mProfileDetails.getPhoto());
-            }
-            etName.setText(mProfileDetails.getName());
-            etEmail.setText(mProfileDetails.getEmail());
-            etCompany.setText(mProfileDetails.getCompany());
-            etLinkeninUrl.setText(mProfileDetails.getLinkedinUrl());
+    private void updateUI(ProfileDetails profileDetails) {
+        if (profileDetails == null) {
+            return;
         }
+        mProfileDetails = profileDetails;
+
+        if (mProfileDetails.getPhoto() != null) {
+            ivProfilePhoto.setImageBitmap(mProfileDetails.getPhoto());
+        }
+        String phoneNumber = UtilityMethods.getDevicePhoneNumber(this);
+        if ((mProfileDetails.getPhoto() == null
+                || mProfileDetails.getPhone().length() <= 0)
+                && (phoneNumber != null
+                && phoneNumber.length() > 0)){
+            etPhone.setText(phoneNumber);
+            mProfileDetails.setPhone(phoneNumber);
+        } else {
+            etPhone.setText(mProfileDetails.getPhone());
+        }
+        etName.setText(mProfileDetails.getName());
+        etEmail.setText(mProfileDetails.getEmail());
+        etCompany.setText(mProfileDetails.getCompany());
+        etLinkeninUrl.setText(mProfileDetails.getLinkedinUrl());
     }
 
     public void onClick(View view) {
@@ -133,6 +146,7 @@ public class EditProfileActivity extends Activity {
         mProfileDetails.setPhoto(((BitmapDrawable) ivProfilePhoto.getDrawable()).getBitmap());
         mProfileDetails.setName(etName.getText().toString());
         mProfileDetails.setEmail(etEmail.getText().toString());
+        mProfileDetails.setPhone(etPhone.getText().toString());
         mProfileDetails.setCompany(etCompany.getText().toString());
         mProfileDetails.setLinkedinUrl(etLinkeninUrl.getText().toString());
         uploadProfilePhoto();
@@ -319,8 +333,7 @@ public class EditProfileActivity extends Activity {
         protected void onPostExecute(ProfileDetails profileDetails){
 
             if (profileDetails != null){
-                mProfileDetails = profileDetails;
-                updateUI();
+                updateUI(profileDetails);
             }
         }
     }
@@ -337,11 +350,9 @@ public class EditProfileActivity extends Activity {
             Boolean result = false;
             ProfileDetails profile = profileDetails[0];
             try {
-                if  (db.updateProfile(profile) > 0L){
-                    return true;
-                } else {
-                    return false;
-                }
+                 if (db.updateProfile(profile) <= 0L){
+                     return false;
+                 }
             } catch (Exception e) {
                 Log.e(TAG, "couldn't fetch profile details", e);
 
@@ -350,7 +361,23 @@ public class EditProfileActivity extends Activity {
                     db.close();
                 }
             }
-            return result;
+            //Sync with Server.
+            BeamItService service = BeamItServiceTransport.getService();
+            Call<User> call = service.updateUserProfile(profile.toUser());
+            Response<User> userResponse;
+            try {
+                userResponse = call.execute();
+            } catch(IOException e){
+                Log.e(TAG, "Error while fetching contact", e);
+                return false;
+            }
+
+            if (userResponse.code() != HttpURLConnection.HTTP_OK){
+                return false;
+            } else {
+                Log.d(TAG, "Updated profile on server successfully");
+            }
+            return true;
         }
 
         @Override

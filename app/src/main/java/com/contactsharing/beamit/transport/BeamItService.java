@@ -17,6 +17,7 @@ import retrofit.http.Body;
 import retrofit.http.DELETE;
 import retrofit.http.GET;
 import retrofit.http.POST;
+import retrofit.http.PUT;
 import retrofit.http.Path;
 
 /**
@@ -66,11 +67,11 @@ public interface BeamItService {
     Call<SignupResponse> signup(@Body SignupRequest signupRequest);
 
     /* User profile api */
-    @POST("/api/user")
+    @PUT("/api/user")
     Call<User> updateUserProfile(@Body User user);
 
     @GET("/api/user/{userId}")
-    Call<User> getUpserProfile(@Path("userId") Integer userId);
+    Call<User> getUserProfile(@Path("userId") Integer userId);
 
     @DELETE("/api/user/{userId}")
     Call<Response> deleteUserProfile(@Path("userId") Integer userId);

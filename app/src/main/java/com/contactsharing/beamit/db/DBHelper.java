@@ -424,8 +424,8 @@ public class DBHelper extends SQLiteOpenHelper {
             try {
                 byte[] rowPhoto = cursor.getBlob(photoIndex);
                 Bitmap photo = rowPhoto == null? null : BitmapFactory.decodeByteArray(rowPhoto, 0, rowPhoto.length);
-                ProfileDetails profileDetails = new ProfileDetails(cursor.getLong(idColIndex),
-                        cursor.getLong(userIdColIndex),
+                ProfileDetails profileDetails = new ProfileDetails(cursor.getInt(idColIndex),
+                        cursor.getInt(userIdColIndex),
                         cursor.getString(nameColIndex),
                         cursor.getString(phoneColIndex),
                         cursor.getString(emailColIndex),

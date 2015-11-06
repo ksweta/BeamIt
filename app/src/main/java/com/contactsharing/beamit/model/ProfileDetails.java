@@ -2,7 +2,7 @@ package com.contactsharing.beamit.model;
 
 import android.graphics.Bitmap;
 
-import java.util.Date;
+import com.contactsharing.beamit.resources.user.User;
 
 /**
  * Created by Kumari on 10/24/15.
@@ -10,9 +10,9 @@ import java.util.Date;
 public class ProfileDetails {
 
     //This id field is used by sqlite.
-    private Long id;
+    private Integer id;
     //This id is provided by the server when app register with server.
-    private Long userId;
+    private Integer userId;
     private String name;
     private String phone;
     private String email;
@@ -25,7 +25,7 @@ public class ProfileDetails {
 
     public ProfileDetails(){
         //Required by the system.
-        this.id = 1L;
+        this.id = 1;
     }
 
     /**
@@ -33,13 +33,13 @@ public class ProfileDetails {
      * @param userId
      * @param email
      */
-    public ProfileDetails(Long userId, String email){
+    public ProfileDetails(Integer userId, String email){
 
         this(null, userId, null, null, email, null, null, null, false);
     }
 
-    public ProfileDetails(Long id,
-                          Long userId,
+    public ProfileDetails(Integer id,
+                          Integer userId,
                           String name,
                           String phone,
                           String email,
@@ -49,7 +49,7 @@ public class ProfileDetails {
                           boolean sync) {
         super();
         if (id == null) {
-            this.id = 1L;
+            this.id = 1;
         } else {
             this.id = id;
         }
@@ -63,15 +63,15 @@ public class ProfileDetails {
         this.sync = sync;
     }
 
-    public Long getId() { return id; }
+    public Integer getId() { return id; }
 
-    public void setId(Long id) { this.id = id; }
+    public void setId(Integer id) { this.id = id; }
 
-    public Long getUserId() {
+    public Integer getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(Integer userId) {
         this.userId = userId;
     }
 
@@ -129,6 +129,18 @@ public class ProfileDetails {
 
     public void setSync(boolean sync) {
         this.sync = sync;
+    }
+
+
+    public User toUser(){
+        User user = new User();
+        user.setId(getUserId());
+        user.setEmail(getEmail());
+        user.setName(getName());
+        user.setPhone(getPhone());
+        user.setCompany(getCompany());
+        user.setLinkedinUrl(getLinkedinUrl());
+        return user;
     }
 
     @Override

@@ -41,11 +41,19 @@
         android:layout_below="@id/et_name" />
 
     <EditText
+        android:id="@+id/et_phone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="@string/phone_no"
+        android:inputType="phone"
+        android:layout_below="@id/et_email"/>
+
+    <EditText
         android:id="@+id/et_company"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/company"
-        android:layout_below="@id/et_email"/>
+        android:layout_below="@id/et_phone"/>
 
     <EditText
         android:id="@+id/et_linkedin_url"

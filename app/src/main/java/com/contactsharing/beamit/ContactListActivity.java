@@ -1,22 +1,18 @@
 package com.contactsharing.beamit;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.SearchManager;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
-import android.nfc.tech.NfcA;
 import android.nfc.tech.NfcF;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -26,7 +22,6 @@ import android.provider.ContactsContract;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
-import android.support.v7.internal.widget.AdapterViewCompat;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -42,22 +37,17 @@ import android.view.MenuItem;
 import com.contactsharing.beamit.db.DBHelper;
 import com.contactsharing.beamit.model.ContactDetails;
 import com.contactsharing.beamit.model.ProfileDetails;
-import com.contactsharing.beamit.resources.contact.Contact;
 import com.contactsharing.beamit.resources.user.User;
 import com.contactsharing.beamit.transport.BeamItService;
 import com.contactsharing.beamit.transport.BeamItServiceTransport;
 import com.contactsharing.beamit.utility.ApplicationConstants;
 import com.contactsharing.beamit.utility.BitmapUtility;
-import com.contactsharing.beamit.utility.JsonConverter;
-import com.google.gson.Gson;
 import com.squareup.okhttp.ResponseBody;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.nio.charset.Charset;
 import java.util.Arrays;
-import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 
@@ -472,7 +462,7 @@ public class ContactListActivity extends ActionBarActivity {
         protected ContactDetails doInBackground(Integer... integers) {
             Integer sharedContactId = integers[0];
             BeamItService service = BeamItServiceTransport.getService();
-            Call<User> contactCall = service.getUpserProfile(sharedContactId);
+            Call<User> contactCall = service.getUserProfile(sharedContactId);
             Response<User> userResponse;
             try {
               userResponse = contactCall.execute();
