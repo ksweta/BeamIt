@@ -33,6 +33,7 @@ public class DBHelper extends SQLiteOpenHelper {
 
     public static final String COLUMN_ID = "_id";
     public static final String COLUMN_CONTACT_ID = "contactId";
+    public static final String COLUMN_OWNER_ID = "ownerId";
     public static final String COLUMN_NAME = "name";
     public static final String COLUMN_PHONE = "phone";
     public static final String COLUMN_EMAIL = "email";
@@ -44,6 +45,16 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String DATABASE_NAME = "beamit.db";
     private static final int DATABASE_VERSION = 1;
 
+    String[] ALL_CONTACT_COLUMNS = new String[]{DBHelper.COLUMN_ID,
+            DBHelper.COLUMN_CONTACT_ID,
+            DBHelper.COLUMN_OWNER_ID,
+            DBHelper.COLUMN_NAME,
+            DBHelper.COLUMN_PHONE,
+            DBHelper.COLUMN_EMAIL,
+            DBHelper.COLUMN_COMPANY,
+            DBHelper.COLUMN_LINKEDIN_URL,
+            DBHelper.COLUMN_PHOTO,
+            DBHelper.COLUMN_SYNC};
     /**
      * SQLite stores the date as string format, so need SimpleDateFormat
      * to convert string to date object.
@@ -53,6 +64,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private static final String DATABASE_CREATE_CONTACT_TABLE = "CREATE TABLE " + TABLE_NAME_CONTACTS +
             "(" + COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, "
             + COLUMN_CONTACT_ID + " INTEGER, "
+            + COLUMN_OWNER_ID + " INTEGER, "
             + COLUMN_NAME + " TEXT, "
             + COLUMN_PHONE + " TEXT, "
             + COLUMN_EMAIL + " TEXT, "
@@ -103,6 +115,49 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
 
+    private List<ContactDetails> getContacts(Cursor cursor) {
+        List<ContactDetails> contactList = new LinkedList<>();
+        if (cursor != null) {
+            // Get the index of the various columns. This helps to get
+            // the column value from the cursor object.
+            int idColIndex = cursor.getColumnIndex(DBHelper.COLUMN_ID);
+            int contactIdIndex = cursor.getColumnIndex(DBHelper.COLUMN_CONTACT_ID);
+            int ownerIdIndex = cursor.getColumnIndex(DBHelper.COLUMN_OWNER_ID);
+            int nameColIndex = cursor.getColumnIndex(DBHelper.COLUMN_NAME);
+            int phoneColIndex = cursor.getColumnIndex(DBHelper.COLUMN_PHONE);
+            int emailColIndex = cursor.getColumnIndex(DBHelper.COLUMN_EMAIL);
+            int companyIndex = cursor.getColumnIndex(DBHelper.COLUMN_COMPANY);
+            int linkedinUrlIndex = cursor.getColumnIndex(DBHelper.COLUMN_LINKEDIN_URL);
+            int photoIndex = cursor.getColumnIndex(DBHelper.COLUMN_PHOTO);
+            int syncIndex = cursor.getColumnIndex(DBHelper.COLUMN_SYNC);
+
+            while (cursor.moveToNext()) {
+                //simpleDateFormat.parse() throws exception, necessary to have try-catch block here.
+                try {
+                    byte[] rowPhoto = cursor.getBlob(photoIndex);
+                    Bitmap photo = rowPhoto == null? null : BitmapFactory.decodeByteArray(rowPhoto, 0, rowPhoto.length);
+                    ContactDetails contact = new ContactDetails(cursor.getInt(idColIndex),
+                            cursor.getInt(contactIdIndex),
+                            cursor.getInt(ownerIdIndex),
+                            cursor.getString(nameColIndex),
+                            cursor.getString(phoneColIndex),
+                            cursor.getString(emailColIndex),
+                            cursor.getString(companyIndex),
+                            cursor.getString(linkedinUrlIndex),
+                            photo,
+                            cursor.getInt(syncIndex) == 1);
+
+                    contactList.add(contact);
+                } catch (Exception e) {
+                    Log.e(TAG, "error while fetching the records", e);
+                }
+            }
+            //Close the DB connection once work is done.
+            cursor.close();
+        }
+
+        return contactList;
+    }
 
 
     public List<ContactDetails> readAllContacts() {
@@ -124,48 +179,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 null,
                 null,
                 null);
-        List<ContactDetails> contactList = new LinkedList<ContactDetails>();
-        if (cursor != null) {
-            //cursor.moveToFirst();
-
-            // Get the index of the various columns. This helps to get
-            // the column value from the cursor object.
-            int idColIndex = cursor.getColumnIndex(DBHelper.COLUMN_ID);
-            int contactIdIndex = cursor.getColumnIndex(DBHelper.COLUMN_CONTACT_ID);
-            int nameColIndex = cursor.getColumnIndex(DBHelper.COLUMN_NAME);
-            int phoneColIndex = cursor.getColumnIndex(DBHelper.COLUMN_PHONE);
-            int emailColIndex = cursor.getColumnIndex(DBHelper.COLUMN_EMAIL);
-            int companyIndex = cursor.getColumnIndex(DBHelper.COLUMN_COMPANY);
-            int linkedinUrlIndex = cursor.getColumnIndex(DBHelper.COLUMN_LINKEDIN_URL);
-            int photoIndex = cursor.getColumnIndex(DBHelper.COLUMN_PHOTO);
-            int syncIndex = cursor.getColumnIndex(DBHelper.COLUMN_SYNC);
-
-
-            while (cursor.moveToNext()) {
-                //simpleDateFormat.parse() throws exception, necessary to have try-catch block here.
-                try {
-                    byte[] rowPhoto = cursor.getBlob(photoIndex);
-                    Bitmap photo = rowPhoto == null? null : BitmapFactory.decodeByteArray(rowPhoto, 0, rowPhoto.length);
-                    ContactDetails contact = new ContactDetails(cursor.getInt(idColIndex),
-                            cursor.getInt(contactIdIndex),
-                            cursor.getString(nameColIndex),
-                            cursor.getString(phoneColIndex),
-                            cursor.getString(emailColIndex),
-                            cursor.getString(companyIndex),
-                            cursor.getString(linkedinUrlIndex),
-                            photo,
-                            cursor.getInt(syncIndex) == 1);
-
-                    contactList.add(contact);
-                } catch (Exception e) {
-                    Log.e(TAG, e.getMessage(), e);
-                }
-            }
-
-            //Close the DB connection once work is done.
-            cursor.close();
-        }
-        return contactList;
+        return getContacts(cursor);
     }
 
     public int updateContact(ContactDetails contact) {
@@ -218,64 +232,59 @@ public class DBHelper extends SQLiteOpenHelper {
         }
     }
 
+
+    /**
+     * Get the contact details which matches with the given contact id.
+     * @param contactLocalId
+     * @return
+     */
     public ContactDetails getContact(Integer contactLocalId){
 
         //Get all columns from Contacts  table.
-        String[] allColumns = new String[]{DBHelper.COLUMN_ID,
-                DBHelper.COLUMN_CONTACT_ID,
-                DBHelper.COLUMN_NAME,
-                DBHelper.COLUMN_PHONE,
-                DBHelper.COLUMN_EMAIL,
-                DBHelper.COLUMN_COMPANY,
-                DBHelper.COLUMN_LINKEDIN_URL,
-                DBHelper.COLUMN_PHOTO,
-                DBHelper.COLUMN_SYNC};
+
         String[] selectionArgs = new String[]{contactLocalId.toString()};
-        Cursor cursor = null;
-        try {
 
-            cursor = getReadableDatabase().query(DBHelper.TABLE_NAME_CONTACTS,
-                    allColumns,
-                    DBHelper.COLUMN_ID + "=?",
-                    selectionArgs,
-                    null,
-                    null,
-                    null);
-            if (cursor == null) {
-                Log.e(TAG, "isContactPresent(): Serious problem, cursor is null");
-            }
-            if (cursor.getCount() > 0) {
+        Cursor cursor = getReadableDatabase().query(DBHelper.TABLE_NAME_CONTACTS,
+                ALL_CONTACT_COLUMNS,
+                DBHelper.COLUMN_ID + "=?",
+                selectionArgs,
+                null,
+                null,
+                null);
 
-                cursor.moveToFirst();
-                // Get the index of the various columns. This helps to get
-                // the column value from the cursor object.
-                int idColIndex = cursor.getColumnIndex(DBHelper.COLUMN_ID);
-                int nameColIndex = cursor.getColumnIndex(DBHelper.COLUMN_NAME);
-                int phoneColIndex = cursor.getColumnIndex(DBHelper.COLUMN_PHONE);
-                int emailColIndex = cursor.getColumnIndex(DBHelper.COLUMN_EMAIL);
-                int companyIndex = cursor.getColumnIndex(DBHelper.COLUMN_COMPANY);
-                int linkedinUrlIndex = cursor.getColumnIndex(DBHelper.COLUMN_LINKEDIN_URL);
-                int photoIndex = cursor.getColumnIndex(DBHelper.COLUMN_PHOTO);
-                int syncIndex = cursor.getColumnIndex(DBHelper.COLUMN_SYNC);
+        List<ContactDetails> contactList = getContacts(cursor);
 
-                byte[] rowPhoto = cursor.getBlob(photoIndex);
-                Bitmap photo = rowPhoto == null? null : BitmapFactory.decodeByteArray(rowPhoto, 0, rowPhoto.length);
-                return new ContactDetails(cursor.getInt(idColIndex),
-                        cursor.getString(nameColIndex),
-                        cursor.getString(phoneColIndex),
-                        cursor.getString(emailColIndex),
-                        cursor.getString(companyIndex),
-                        cursor.getString(linkedinUrlIndex),
-                        photo,
-                        cursor.getInt(syncIndex) == 1);
-            } else {
-                return null;
-            }
-        } finally {
-            if (cursor != null) {
-                cursor.close();
-            }
+        if(contactList.isEmpty()){
+            return null;
+        } else {
+            return contactList.get(0);
         }
+    }
+
+    /**
+     * This method returns the contactDetails list which needs to be synced.
+     * @param synced
+     * @return
+     */
+    public List<ContactDetails> getCotnactsTobeSynced(boolean synced){
+        int syncedValue;
+        if (synced) {
+            syncedValue = 1;
+        } else {
+            syncedValue = 0;
+        }
+
+        String[] selectionArgs = new String[] {String.valueOf(syncedValue)};
+
+        Cursor cursor = getReadableDatabase().query(DBHelper.TABLE_NAME_CONTACTS,
+                ALL_CONTACT_COLUMNS,
+                DBHelper.COLUMN_SYNC + "=?",
+                selectionArgs,
+                null,
+                null,
+                null);
+
+        return getContacts(cursor);
     }
     /**
      * This is a helper method to convert ContactDetails object to ContentValues
@@ -287,6 +296,7 @@ public class DBHelper extends SQLiteOpenHelper {
     private ContentValues getValues(ContactDetails contact) {
         ContentValues values = new ContentValues();
         values.put(DBHelper.COLUMN_CONTACT_ID, contact.getContactId());
+        values.put(DBHelper.COLUMN_OWNER_ID, contact.getOwnerId());
         values.put(DBHelper.COLUMN_NAME, contact.getName());
         values.put(DBHelper.COLUMN_PHONE, contact.getPhone());
         values.put(DBHelper.COLUMN_EMAIL, contact.getEmail());
@@ -322,47 +332,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 null,
                 null,
                 null);
-
-        List<ContactDetails> contactList = new LinkedList<ContactDetails>();
-        if (cursor != null) {
-            //cursor.moveToFirst();
-
-            // Get the index of the various columns. This helps to get
-            // the column value from the cursor object.
-            int idColIndex = cursor.getColumnIndex(DBHelper.COLUMN_ID);
-            int nameColIndex = cursor.getColumnIndex(DBHelper.COLUMN_NAME);
-            int phoneColIndex = cursor.getColumnIndex(DBHelper.COLUMN_PHONE);
-            int emailColIndex = cursor.getColumnIndex(DBHelper.COLUMN_EMAIL);
-            int companyIndex = cursor.getColumnIndex(DBHelper.COLUMN_COMPANY);
-            int linkedinUrlIndex = cursor.getColumnIndex(DBHelper.COLUMN_LINKEDIN_URL);
-            int photoIndex = cursor.getColumnIndex(DBHelper.COLUMN_PHOTO);
-            int syncIndex = cursor.getColumnIndex(DBHelper.COLUMN_SYNC);
-
-
-            while (cursor.moveToNext()) {
-                //simpleDateFormat.parse() throws exception, necessary to have try-catch block here.
-                try {
-                    byte[] rowPhoto = cursor.getBlob(photoIndex);
-                    Bitmap photo = rowPhoto == null? null : BitmapFactory.decodeByteArray(rowPhoto, 0, rowPhoto.length);
-                    ContactDetails contact = new ContactDetails(cursor.getInt(idColIndex),
-                            cursor.getString(nameColIndex),
-                            cursor.getString(phoneColIndex),
-                            cursor.getString(emailColIndex),
-                            cursor.getString(companyIndex),
-                            cursor.getString(linkedinUrlIndex),
-                            photo,
-                            cursor.getInt(syncIndex) == 1);
-
-                    contactList.add(contact);
-                } catch (Exception e) {
-                    Log.e(TAG, e.getMessage(), e);
-                }
-            }
-
-            //Close the DB connection once work is done.
-            cursor.close();
-        }
-        return contactList;
+        return getContacts(cursor);
 
     }
 

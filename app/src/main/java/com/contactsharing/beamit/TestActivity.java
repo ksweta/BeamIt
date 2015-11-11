@@ -9,6 +9,7 @@ import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
 import android.nfc.Tag;
 import android.nfc.tech.NfcF;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Parcelable;
 import android.support.v7.app.ActionBarActivity;
@@ -16,11 +17,16 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import com.contactsharing.beamit.R;
+import com.contactsharing.beamit.db.DBHelper;
+import com.contactsharing.beamit.model.ContactDetails;
+import com.contactsharing.beamit.services.UploadContactsService;
 
 import java.util.Arrays;
+import java.util.List;
 
 public class TestActivity extends ActionBarActivity {
     private static final String TAG = TestActivity.class.getSimpleName();
@@ -68,5 +74,29 @@ public class TestActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    public void onClick(View view){
+//        UploadContactsService.uploadContacts(this);
+     new TestAsyncTask().execute();
+
+    }
+
+    private class TestAsyncTask extends AsyncTask<Void, Void, Void> {
+
+        @Override
+        protected Void doInBackground(Void... voids) {
+
+            DBHelper db = new DBHelper(getApplicationContext());
+            List<ContactDetails> contactdetails = db.getCotnactsTobeSynced(true);
+            for(ContactDetails contact : contactdetails){
+                Log.d(TAG, String.format("contact local id: %d, cotnact id: %d, owner id: %d",
+                        contact.getId(),
+                        contact.getContactId(),
+                        contact.getOwnerId()));
+            }
+            return null;
+        }
     }
 }

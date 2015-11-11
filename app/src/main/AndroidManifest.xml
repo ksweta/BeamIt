@@ -112,7 +112,7 @@
         <!-- android:resource="@xml/searchable"/> -->
         <!-- </activity> -->
         <service
-            android:name=".services.ContactSyncService"
+            android:name=".services.UploadContactsService"
             android:exported="false" >
         </service>
     </application>

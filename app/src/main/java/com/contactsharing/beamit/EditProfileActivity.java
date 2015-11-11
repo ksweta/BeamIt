@@ -393,21 +393,10 @@ public class EditProfileActivity extends Activity {
 
     private void uploadProfilePhoto(){
         BeamItService service = BeamItServiceTransport.getService();
-
-        MediaType MEDIA_TYPE_JPEG = MediaType.parse("image/jpeg");
-        byte [] data = BitmapUtility.getBitmapToBytes(((BitmapDrawable) ivProfilePhoto.getDrawable()).getBitmap());
         ProfileDetails profile = mProfileDb.fetchProfileDetails();
-        Log.d(TAG, String.format("Profile detals => user_id: %d, filename: %s, size of data: %d",
+        RequestBody requestBody = UtilityMethods.getPhotoRequestBody(((BitmapDrawable) ivProfilePhoto.getDrawable()).getBitmap(),
                 profile.getUserId(),
-                UtilityMethods.formatFileString("profile", profile.getUserId(), "jpeg"),
-                data.length));
-
-        RequestBody requestBody = new MultipartBuilder()
-                .type(MultipartBuilder.FORM)
-                .addFormDataPart("photo",
-                        UtilityMethods.formatFileString("profile", profile.getUserId(), "jpeg"),
-                        RequestBody.create(MEDIA_TYPE_JPEG, data))
-                .build();
+                "profile");
 
         Call<Void> call = service.uploadUserProfilePhoto(profile.getUserId().intValue(),
                 requestBody);

@@ -1,6 +1,7 @@
 package com.contactsharing.beamit.transport;
 
 import com.contactsharing.beamit.resources.contact.Contact;
+import com.contactsharing.beamit.resources.contact.ContactList;
 import com.contactsharing.beamit.resources.password.PasswordChangeRequest;
 import com.contactsharing.beamit.resources.password.PasswordChangeResponse;
 import com.contactsharing.beamit.resources.signin.SigninRequest;
@@ -35,6 +36,9 @@ public interface BeamItService {
     @DELETE("/api/contact/{contactId}")
     Call<Response> deleteContact(@Path("contactId") Integer contactId);
 
+    @GET("/api/contactlist/user/{ownerId}")
+    Call<ContactList> getContactList(@Path("ownerId") Integer ownerId);
+
     /* Password api */
     @POST("/api/password")
     Call<PasswordChangeResponse> changePassword(@Body PasswordChangeRequest passwordChangeRequest);
@@ -50,7 +54,7 @@ public interface BeamItService {
     Call<Response> deleteUserProfilePhoto(@Path("userId") Integer userId);
 
     @POST("/api/photo/contact/{contactId}")
-    Call<Response> uploadContactPhoto(@Path("contactId") Integer contactId, @Body RequestBody photo);
+    Call<Void> uploadContactPhoto(@Path("contactId") Integer contactId, @Body RequestBody photo);
 
     @GET("/api/photo/contact/{contactId}")
     Call<ResponseBody> downloadContactPhoto(@Path("contactId") Integer contactId);
@@ -74,6 +78,6 @@ public interface BeamItService {
     Call<User> getUserProfile(@Path("userId") Integer userId);
 
     @DELETE("/api/user/{userId}")
-    Call<Response> deleteUserProfile(@Path("userId") Integer userId);
+    Call<ResponseBody> deleteUserProfile(@Path("userId") Integer userId);
 
     }

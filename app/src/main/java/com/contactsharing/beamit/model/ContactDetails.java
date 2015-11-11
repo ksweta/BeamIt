@@ -12,6 +12,7 @@ public class ContactDetails implements Model {
     // This id will be provided by the SQLite.
     // It is auto-increment.
     private Integer id;
+    private Integer ownerId;
     private Integer contactId;
     private String name;
     private String phone;
@@ -28,6 +29,7 @@ public class ContactDetails implements Model {
     }
 
     public ContactDetails(Integer contactId,
+                          Integer ownerId,
                           String name,
                           String phone,
                           String email,
@@ -36,11 +38,12 @@ public class ContactDetails implements Model {
                           Bitmap photo,
                           boolean synced) {
         //Passing ID as zero, this value will be ignored later.
-        this(0, contactId, name, phone, email, company, linkedinUrl, photo, synced);
+        this(0, contactId, ownerId, name, phone, email, company, linkedinUrl, photo, synced);
     }
 
     public ContactDetails(Integer id,
                           Integer contactId,
+                          Integer ownerId,
                           String name,
                           String phone,
                           String email,
@@ -51,6 +54,7 @@ public class ContactDetails implements Model {
         super();
         this.id = id;
         this.contactId = contactId;
+        this.ownerId = ownerId;
         this.name = name;
         this.phone = phone;
         this.email = email;
@@ -126,6 +130,14 @@ public class ContactDetails implements Model {
         this.synced = synced;
     }
 
+    public Integer getOwnerId() {
+        return ownerId;
+    }
+
+    public void setOwnerId(Integer ownerId) {
+        this.ownerId = ownerId;
+    }
+
     /**
      * This method convert `Contact` resource to ContactDetails object.
      * @param contact
@@ -133,6 +145,8 @@ public class ContactDetails implements Model {
      */
     public static ContactDetails fromContact(Contact contact){
         ContactDetails contactDetails = new ContactDetails();
+        contactDetails.setId(contact.getId());
+        contactDetails.setOwnerId(contact.getOwnerId());
         contactDetails.setName(contact.getName());
         contactDetails.setEmail(contact.getEmail());
         contactDetails.setPhone(contact.getPhone());
@@ -140,6 +154,26 @@ public class ContactDetails implements Model {
         contactDetails.setLinkedinUrl(contact.getLinkedinUrl());
 
         return contactDetails;
+    }
+
+    /**
+     * This method convert current object to 'Contact' resource object. This will be used while
+     * uploading the contact details.
+     * @return
+     */
+    public Contact toContact(){
+        Contact contact = new Contact();
+        if (this.getContactId() != null) {
+            contact.setId(this.getContactId());
+        }
+        contact.setOwnerId(this.getOwnerId());
+        contact.setName(this.getName());
+        contact.setEmail(this.getEmail());
+        contact.setPhone(this.getPhone());
+        contact.setCompany(this.getCompany());
+        contact.setLinkedinUrl(this.getLinkedinUrl());
+
+        return contact;
     }
 
     /**
@@ -157,6 +191,7 @@ public class ContactDetails implements Model {
 
         return contactDetails;
     }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -164,8 +199,10 @@ public class ContactDetails implements Model {
 
         ContactDetails that = (ContactDetails) o;
 
-        if (synced != that.synced) return false;
+        if (isSynced() != that.isSynced()) return false;
         if (getId() != null ? !getId().equals(that.getId()) : that.getId() != null) return false;
+        if (getOwnerId() != null ? !getOwnerId().equals(that.getOwnerId()) : that.getOwnerId() != null)
+            return false;
         if (getContactId() != null ? !getContactId().equals(that.getContactId()) : that.getContactId() != null)
             return false;
         if (getName() != null ? !getName().equals(that.getName()) : that.getName() != null)
@@ -183,13 +220,14 @@ public class ContactDetails implements Model {
     @Override
     public int hashCode() {
         int result = getId() != null ? getId().hashCode() : 0;
+        result = 31 * result + (getOwnerId() != null ? getOwnerId().hashCode() : 0);
         result = 31 * result + (getContactId() != null ? getContactId().hashCode() : 0);
         result = 31 * result + (getName() != null ? getName().hashCode() : 0);
         result = 31 * result + (getPhone() != null ? getPhone().hashCode() : 0);
         result = 31 * result + (getEmail() != null ? getEmail().hashCode() : 0);
         result = 31 * result + (getCompany() != null ? getCompany().hashCode() : 0);
         result = 31 * result + (getLinkedinUrl() != null ? getLinkedinUrl().hashCode() : 0);
-        result = 31 * result + (synced ? 1 : 0);
+        result = 31 * result + (isSynced() ? 1 : 0);
         return result;
     }
 
@@ -197,6 +235,7 @@ public class ContactDetails implements Model {
     public String toString() {
         return "ContactDetails{" +
                 "id=" + id +
+                ", ownerId=" + ownerId +
                 ", contactId=" + contactId +
                 ", name='" + name + '\'' +
                 ", phone='" + phone + '\'' +

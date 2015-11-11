@@ -1,5 +1,6 @@
 package com.contactsharing.beamit;
 
+import android.content.Context;
 import android.content.Intent;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;

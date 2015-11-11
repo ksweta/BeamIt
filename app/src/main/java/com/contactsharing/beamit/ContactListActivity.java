@@ -1,9 +1,11 @@
 package com.contactsharing.beamit;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.SearchManager;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -38,6 +40,7 @@ import com.contactsharing.beamit.db.DBHelper;
 import com.contactsharing.beamit.model.ContactDetails;
 import com.contactsharing.beamit.model.ProfileDetails;
 import com.contactsharing.beamit.resources.user.User;
+import com.contactsharing.beamit.services.UploadContactsService;
 import com.contactsharing.beamit.transport.BeamItService;
 import com.contactsharing.beamit.transport.BeamItServiceTransport;
 import com.contactsharing.beamit.utility.ApplicationConstants;
@@ -122,7 +125,7 @@ public class ContactListActivity extends ActionBarActivity {
         mNFCTechLists = new String[][] { new String[] { NfcF.class.getName() } };
 
         // Debug
-        print2DStringArray(mNFCTechLists);
+//        print2DStringArray(mNFCTechLists);
 
         mDb = new DBHelper(this);
         mContacts = mDb.readAllContacts();
@@ -304,7 +307,8 @@ public class ContactListActivity extends ActionBarActivity {
 
             if (name != null && !name.isEmpty()) {
                 ContactDetails contactDetails = new ContactDetails(
-                        0,
+                        null,
+                        null,
                         name,
                         phoneNumber,
                         email,
@@ -356,6 +360,10 @@ public class ContactListActivity extends ActionBarActivity {
      *
      */
     private void saveNewContact(ContactDetails contactDetails) {
+        if(contactDetails.getOwnerId() == null) {
+            ProfileDetails profile = mDb.fetchProfileDetails();
+            contactDetails.setOwnerId(profile.getUserId());
+        }
 
         if ( mContactNamesRecyclerViewAdapter.add(contactDetails)) {
             //Notify user.
@@ -403,6 +411,9 @@ public class ContactListActivity extends ActionBarActivity {
                 launchEditProfileActivity();
                 return true;
 
+            case R.id.action_delete_account:
+                deleteAccount();
+                return true;
             case R.id.action_settings:
                 // TODO: Need to handle settings.
                 return true;
@@ -421,6 +432,22 @@ public class ContactListActivity extends ActionBarActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    private void deleteAccount() {
+
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.delete_account)
+                .setMessage("Do you really want to delete account?")
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialogInterface, int i) {
+                        new DeleteUserProfile().execute();
+                    }
+                })
+                .setNegativeButton(android.R.string.no, null)
+                .show();
     }
 
     private void launchEditProfileActivity(){
@@ -479,7 +506,6 @@ public class ContactListActivity extends ActionBarActivity {
             ContactDetails contactDetails = ContactDetails.fromUser(userResponse.body());
 
             //Download contact photo
-
             Call<ResponseBody> responseCall = service.downloadUserProfilePhoto(sharedContactId);
             Response<ResponseBody> response;
             try {
@@ -505,6 +531,43 @@ public class ContactListActivity extends ActionBarActivity {
         protected void onPostExecute(ContactDetails contactDetails){
             if (contactDetails != null) {
                 saveNewContact(contactDetails);
+                UploadContactsService.uploadContacts(getApplicationContext());
+            }
+        }
+    }
+
+    private class DeleteUserProfile extends AsyncTask<Void, Integer, Boolean>{
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            DBHelper db = new DBHelper(getApplicationContext());
+            ProfileDetails profile = db.fetchProfileDetails();
+
+            if (profile != null){
+                BeamItService service = BeamItServiceTransport.getService();
+                Call<ResponseBody> call = service.deleteUserProfile(profile.getUserId());
+                Response<ResponseBody> response;
+                try {
+                    response = call.execute();
+                } catch (IOException e) {
+                    Log.e(TAG, "Failed to delete user profile", e);
+                    return false;
+                }
+
+                return response.code() == HttpURLConnection.HTTP_NO_CONTENT;
+            }
+            return true;
+        }
+
+        @Override
+        protected  void onPostExecute(Boolean result){
+            if(result){
+                Toast.makeText(getApplicationContext(), "Successfully deleted account", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getApplicationContext(), SigninActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                startActivity(intent);
+            } else {
+                Toast.makeText(getApplicationContext(), "Failed to delete account", Toast.LENGTH_SHORT).show();
             }
         }
     }
