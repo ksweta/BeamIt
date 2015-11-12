@@ -14,7 +14,7 @@
     <string name="title_activity_test">TestActivity</string>
     <string name="search_hint">Search contacts</string>
     <string name="title_activity_search_results">SearchResultsActivity</string>
-    <string name="iv_contact_photo">Contact photo</string>
+    <string name="iv_contact_photo">Contact photoUri</string>
     <string name="company">Company name</string>
     <string name="name">Full name</string>
     <string name="linkedin_url">Linkedin URL</string>

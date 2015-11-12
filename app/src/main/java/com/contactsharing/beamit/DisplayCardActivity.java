@@ -133,8 +133,8 @@ public class DisplayCardActivity extends Activity {
                 if (contactDetails.getEmail() != null) {
                     tvEmail.setText(contactDetails.getEmail());
                 }
-                if (contactDetails.getPhoto() != null) {
-                    ivContactPhoto.setImageBitmap(contactDetails.getPhoto());
+                if (contactDetails.getPhotoUri() != null) {
+//                    ivContactPhoto.setImageBitmap(contactDetails.getPhotoUri());
                 }
             }
         }

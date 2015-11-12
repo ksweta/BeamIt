@@ -19,12 +19,13 @@ import com.contactsharing.beamit.model.ProfileDetails;
 import com.contactsharing.beamit.resources.user.User;
 import com.contactsharing.beamit.transport.BeamItService;
 import com.contactsharing.beamit.transport.BeamItServiceTransport;
+import com.contactsharing.beamit.utility.ApplicationConstants;
 import com.contactsharing.beamit.utility.BitmapUtility;
 import com.contactsharing.beamit.utility.UtilityMethods;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.MultipartBuilder;
 import com.squareup.okhttp.RequestBody;
 import com.squareup.okhttp.ResponseBody;
+import com.squareup.picasso.MemoryPolicy;
+import com.squareup.picasso.Picasso;
 
 import org.apache.http.HttpStatus;
 
@@ -35,6 +36,7 @@ import org.brickred.socialauth.android.SocialAuthAdapter;
 import org.brickred.socialauth.android.SocialAuthError;
 import org.brickred.socialauth.android.SocialAuthListener;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -84,10 +86,6 @@ public class EditProfileActivity extends Activity {
         }
         //Fetch the profile details.
         new FetchProfileDetailsAsyncTask().execute();
-
-        //LinkedInt import
-        adapter = new SocialAuthAdapter(new ResponseListener());
-
     }
 
     private void updateUI(ProfileDetails profileDetails) {
@@ -96,11 +94,17 @@ public class EditProfileActivity extends Activity {
         }
         mProfileDetails = profileDetails;
 
-        if (mProfileDetails.getPhoto() != null) {
-            ivProfilePhoto.setImageBitmap(mProfileDetails.getPhoto());
+        if (mProfileDetails.getPhotoUri() != null) {
+            Picasso.with(this)
+                    .load(new File(getApplicationContext().getExternalFilesDir(null),
+                            mProfileDetails.getPhotoUri()))
+                    .memoryPolicy(MemoryPolicy.NO_CACHE)
+                    .into(ivProfilePhoto);
         }
+
+
         String phoneNumber = UtilityMethods.getDevicePhoneNumber(this);
-        if ((mProfileDetails.getPhoto() == null
+        if ((mProfileDetails.getPhotoUri() == null
                 || mProfileDetails.getPhone().length() <= 0)
                 && (phoneNumber != null
                 && phoneNumber.length() > 0)){
@@ -143,7 +147,19 @@ public class EditProfileActivity extends Activity {
         if (mProfileDetails == null) {
             mProfileDetails = new ProfileDetails();
         }
-        mProfileDetails.setPhoto(((BitmapDrawable) ivProfilePhoto.getDrawable()).getBitmap());
+        String profilePhotoFielname =  UtilityMethods.photoFileNameFormatter(ApplicationConstants.PROFILE_PHOTO_FILE_PREFIX,
+                ApplicationConstants.PHOTO_FILE_EXTENSION,
+                mProfileDetails.getId());
+
+        if(BitmapUtility.storeImageToInternalStorage(this,
+                ((BitmapDrawable) ivProfilePhoto.getDrawable()).getBitmap(),
+                ApplicationConstants.PROFILE_PHOTO_DIRECTORY,
+                profilePhotoFielname
+                )
+        ) {
+            mProfileDetails.setPhotoUri(ApplicationConstants.PROFILE_PHOTO_DIRECTORY + "/" + profilePhotoFielname);
+        }
+
         mProfileDetails.setName(etName.getText().toString());
         mProfileDetails.setEmail(etEmail.getText().toString());
         mProfileDetails.setPhone(etPhone.getText().toString());
@@ -237,19 +253,19 @@ public class EditProfileActivity extends Activity {
         @Override
         public void onExecute(String provider, Profile profile) {
 
-            Log.d("Custom-UI", "Receiving Data");
-            Log.d(TAG, String.format("LinedIn=> first name: %s", profile.getFirstName()));
-            Log.d(TAG, String.format("LinedIn=> last name: %s", profile.getLastName()));
-            Log.d(TAG, String.format("LinedIn=> email: %s", profile.getEmail()));
-            Log.d(TAG, String.format("LinedIn=> url: %s", profile.getProfileImageURL()));
-            Log.d(TAG, String.format("LinkedIn=> id: %s", profile.getProviderId()));
-            etName.setText(String.format("%s %s", profile.getFirstName(), profile.getLastName()));
-            etEmail.setText(profile.getEmail());
-            if (profile.getProfileImageURL() != null) {
-//                new DownloadLinkedinProifilImage().execute(profile.getProfileImageURL());
-            }
+//            Log.d("Custom-UI", "Receiving Data");
+//            Log.d(TAG, String.format("LinedIn=> first name: %s", profile.getFirstName()));
+//            Log.d(TAG, String.format("LinedIn=> last name: %s", profile.getLastName()));
+//            Log.d(TAG, String.format("LinedIn=> email: %s", profile.getEmail()));
+//            Log.d(TAG, String.format("LinedIn=> url: %s", profile.getProfileImageURL()));
+//            Log.d(TAG, String.format("LinkedIn=> id: %s", profile.getProviderId()));
+//            etName.setText(String.format("%s %s", profile.getFirstName(), profile.getLastName()));
+//            etEmail.setText(profile.getEmail());
+//            if (profile.getProfileImageURL() != null) {
+////                new DownloadLinkedinProifilImage().execute(profile.getProfileImageURL());
+//            }
 
-            Toast.makeText(getApplicationContext(), "Successfully imported!", Toast.LENGTH_SHORT).show();
+//            Toast.makeText(getApplicationContext(), "Successfully imported!", Toast.LENGTH_SHORT).show();
         }
 
         @Override

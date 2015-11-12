@@ -35,7 +35,7 @@ public class BeamItServiceTransport {
             // TODO: remove interceptors once development part is done.
             service =  new Retrofit.Builder()
                     .baseUrl(BASE_URL)
-                    .client(client)
+//                    .client(client)
                     .addConverterFactory(GsonConverterFactory.create())
                     .build().create(BeamItService.class);
         }

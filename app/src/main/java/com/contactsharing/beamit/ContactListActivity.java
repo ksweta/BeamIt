@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
@@ -39,12 +40,13 @@ import android.view.MenuItem;
 import com.contactsharing.beamit.db.DBHelper;
 import com.contactsharing.beamit.model.ContactDetails;
 import com.contactsharing.beamit.model.ProfileDetails;
-import com.contactsharing.beamit.resources.user.User;
-import com.contactsharing.beamit.services.UploadContactsService;
+import com.contactsharing.beamit.resources.contact.Contact;
+import com.contactsharing.beamit.resources.share.ShareContactRequest;
 import com.contactsharing.beamit.transport.BeamItService;
 import com.contactsharing.beamit.transport.BeamItServiceTransport;
 import com.contactsharing.beamit.utility.ApplicationConstants;
 import com.contactsharing.beamit.utility.BitmapUtility;
+import com.contactsharing.beamit.utility.UtilityMethods;
 import com.squareup.okhttp.ResponseBody;
 
 import java.io.IOException;
@@ -64,7 +66,6 @@ public class ContactListActivity extends ActionBarActivity {
     private ImageButton FAB;
     private List<ContactDetails> mContacts;
     private DBHelper mDb;
-
 
     //Recylcer view related variables
     private RecyclerView mRecyclerView;
@@ -96,9 +97,6 @@ public class ContactListActivity extends ActionBarActivity {
                     Toast.LENGTH_SHORT).show();
         }
         else {
-            // NFC and Android Beam file transfer is supported.
-//            Toast.makeText(this, "Android Beam is supported on your device.",
-//                    Toast.LENGTH_SHORT).show();
             Log.d(TAG, "Android Beam is supported on this device");
         }
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
@@ -131,7 +129,8 @@ public class ContactListActivity extends ActionBarActivity {
         mContacts = mDb.readAllContacts();
 
         mSwipeRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.activity_main_swipe_refresh_layout);
-        mContactNamesRecyclerViewAdapter = new ContactNamesRecyclerViewAdapter(mContacts,
+        mContactNamesRecyclerViewAdapter = new ContactNamesRecyclerViewAdapter(this,
+                mContacts,
                 R.layout.contact_list_item,
                 mDb);
         mRecyclerView = (RecyclerView) findViewById(R.id.activity_main_recyclerview);
@@ -487,39 +486,60 @@ public class ContactListActivity extends ActionBarActivity {
 
         @Override
         protected ContactDetails doInBackground(Integer... integers) {
-            Integer sharedContactId = integers[0];
+            Integer subjectId = integers[0];
             BeamItService service = BeamItServiceTransport.getService();
-            Call<User> contactCall = service.getUserProfile(sharedContactId);
-            Response<User> userResponse;
+            DBHelper db = new DBHelper(getApplicationContext());
+            ProfileDetails profileDetails = db.fetchProfileDetails();
+
+            ShareContactRequest shareContactRequest = new ShareContactRequest(profileDetails.getUserId(), subjectId);
+            Call<Contact> contactCall = service.shareContact(shareContactRequest);
+            Response<Contact> contactResponse;
             try {
-              userResponse = contactCall.execute();
+                contactResponse = contactCall.execute();
             } catch (IOException e) {
                 Log.e(TAG, "Error while fetching contact", e);
                 return null;
             }
-            if (userResponse.code() != HttpURLConnection.HTTP_OK){
+            if (contactResponse.code() != HttpURLConnection.HTTP_CREATED){
                 Log.i(TAG, String.format("Couldn't get contact details => code: %d, response: %s",
-                        userResponse.code(),
-                        userResponse.body()));
+                        contactResponse.code(),
+                        contactResponse.body()));
                 return null;
             }
-            ContactDetails contactDetails = ContactDetails.fromUser(userResponse.body());
+            ContactDetails contactDetails = ContactDetails.fromContact(contactResponse.body());
+            Log.d(TAG, String.format("Contact id: %d", contactDetails.getContactId()));
 
             //Download contact photo
-            Call<ResponseBody> responseCall = service.downloadUserProfilePhoto(sharedContactId);
-            Response<ResponseBody> response;
+            Call<ResponseBody> responseCall = service.downloadContactPhoto(contactDetails.getContactId());
+            Response<ResponseBody> response = null;
             try {
                 response = responseCall.execute();
             } catch(IOException e){
                 Log.e(TAG, "Coudln't get contact photo ",e);
-                response = null;
             }
-            if (response.code() != HttpURLConnection.HTTP_OK){
+            if (response == null || response.code() != HttpURLConnection.HTTP_OK){
                 Log.i(TAG, String.format("Coudln't get contact photo => code: %d", response.code()));
             } else {
 
                 try {
-                    contactDetails.setPhoto(BitmapUtility.getBytesToBitmap(response.body().bytes()));
+                    Bitmap bitmap =  BitmapUtility.getBytesToBitmap(response.body().bytes());
+                    if (bitmap != null){
+                        Log.d(TAG, "bitmap is not null");
+                    } else {
+                        Log.e(TAG, "bitmap is null");
+                    }
+                    String photoFileName = UtilityMethods.photoFileNameFormatter(ApplicationConstants.CONTACT_PHOTO_FILE_PREFIX,
+                            ApplicationConstants.PHOTO_FILE_EXTENSION,
+                            contactDetails.getContactId());
+
+                    BitmapUtility.storeImageToInternalStorage(getApplicationContext(),
+                            bitmap,
+                            ApplicationConstants.CONTACT_PHOTO_DIRECTORY,
+                            photoFileName);
+
+                    contactDetails.setPhotoUri(UtilityMethods.photoFilePath(
+                            ApplicationConstants.CONTACT_PHOTO_DIRECTORY,
+                            photoFileName));
                 } catch (IOException e) {
                     Log.e(TAG, "couldn't fetch image", e);
                 }
@@ -531,7 +551,6 @@ public class ContactListActivity extends ActionBarActivity {
         protected void onPostExecute(ContactDetails contactDetails){
             if (contactDetails != null) {
                 saveNewContact(contactDetails);
-                UploadContactsService.uploadContacts(getApplicationContext());
             }
         }
     }

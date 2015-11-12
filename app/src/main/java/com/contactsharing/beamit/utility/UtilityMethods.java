@@ -9,6 +9,8 @@ import com.squareup.okhttp.MediaType;
 import com.squareup.okhttp.MultipartBuilder;
 import com.squareup.okhttp.RequestBody;
 
+import java.io.File;
+
 /**
  * Created by Kumari on 11/2/15.
  */
@@ -53,5 +55,19 @@ public class UtilityMethods {
                 .build();
 
         return requestBody;
+    }
+
+
+    public static String photoFileNameFormatter(String prefix, String extension, Integer id){
+
+        if(id != null){
+            return String.format("%s_%d.%s", prefix, id, extension);
+        } else {
+            return String.format("%s.%s", prefix,extension);
+        }
+    }
+
+    public static String photoFilePath(String photoDirectory, String filename){
+        return String.format("%s/%s", photoDirectory, filename);
     }
 }
