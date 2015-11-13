@@ -1,6 +1,7 @@
 package com.contactsharing.beamit;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -14,6 +15,9 @@ import android.widget.Toast;
 import com.contactsharing.beamit.db.DBHelper;
 import com.contactsharing.beamit.model.ContactDetails;
 import com.contactsharing.beamit.utility.ApplicationConstants;
+import com.squareup.picasso.Picasso;
+
+import java.io.File;
 
 /**
  * Created by kumari on 9/15/15.
@@ -134,7 +138,11 @@ public class DisplayCardActivity extends Activity {
                     tvEmail.setText(contactDetails.getEmail());
                 }
                 if (contactDetails.getPhotoUri() != null) {
-//                    ivContactPhoto.setImageBitmap(contactDetails.getPhotoUri());
+                    Context context = getApplicationContext();
+                    Picasso.with(context)
+                            .load(new File(context.getExternalFilesDir(null),
+                                    contactDetails.getPhotoUri()))
+                            .into(ivContactPhoto);
                 }
             }
         }
