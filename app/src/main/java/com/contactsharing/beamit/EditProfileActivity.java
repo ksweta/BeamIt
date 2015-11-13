@@ -147,17 +147,17 @@ public class EditProfileActivity extends Activity {
         if (mProfileDetails == null) {
             mProfileDetails = new ProfileDetails();
         }
-        String profilePhotoFielname =  UtilityMethods.photoFileNameFormatter(ApplicationConstants.PROFILE_PHOTO_FILE_PREFIX,
+        String profilePhotoFilename =  UtilityMethods.photoFileNameFormatter(ApplicationConstants.PROFILE_PHOTO_FILE_PREFIX,
                 ApplicationConstants.PHOTO_FILE_EXTENSION,
                 mProfileDetails.getId());
 
         if(BitmapUtility.storeImageToInternalStorage(this,
                 ((BitmapDrawable) ivProfilePhoto.getDrawable()).getBitmap(),
                 ApplicationConstants.PROFILE_PHOTO_DIRECTORY,
-                profilePhotoFielname
+                profilePhotoFilename
                 )
         ) {
-            mProfileDetails.setPhotoUri(ApplicationConstants.PROFILE_PHOTO_DIRECTORY + "/" + profilePhotoFielname);
+            mProfileDetails.setPhotoUri(ApplicationConstants.PROFILE_PHOTO_DIRECTORY + "/" + profilePhotoFilename);
         }
 
         mProfileDetails.setName(etName.getText().toString());
