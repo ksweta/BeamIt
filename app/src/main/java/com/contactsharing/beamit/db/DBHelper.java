@@ -69,7 +69,7 @@ public class DBHelper extends SQLiteOpenHelper {
             + COLUMN_EMAIL + " TEXT, "
             + COLUMN_COMPANY + " TEXT, "
             + COLUMN_LINKEDIN_URL + " TEXT, "
-            + COLUMN_PHOTO_URI + " BLOB, "
+            + COLUMN_PHOTO_URI + " TEXT, "
             + COLUMN_SYNC + " BOOLEAN);";
 
     private static final String DATABASE_CREATE_PROFILE_TABLE = "CREATE TABLE " + TABLE_NAME_PROFILE +
@@ -158,19 +158,8 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
     public List<ContactDetails> readAllContacts() {
-        //Get all columns from Contacts  table.
-        String[] allColumns = new String[]{DBHelper.COLUMN_ID,
-                DBHelper.COLUMN_CONTACT_ID,
-                DBHelper.COLUMN_NAME,
-                DBHelper.COLUMN_PHONE,
-                DBHelper.COLUMN_EMAIL,
-                DBHelper.COLUMN_COMPANY,
-                DBHelper.COLUMN_LINKEDIN_URL,
-                DBHelper.COLUMN_PHOTO_URI,
-                DBHelper.COLUMN_SYNC};
-
         Cursor cursor = getReadableDatabase().query(DBHelper.TABLE_NAME_CONTACTS,
-                allColumns,
+                ALL_CONTACT_COLUMNS,
                 null,
                 null,
                 null,
@@ -310,20 +299,12 @@ public class DBHelper extends SQLiteOpenHelper {
 
 
     public List<ContactDetails> getNameMatches(String query) {
-        //Get all columns from Contacts  table.
-        String[] columns = new String[]{DBHelper.COLUMN_ID,
-                DBHelper.COLUMN_NAME,
-                DBHelper.COLUMN_PHONE,
-                DBHelper.COLUMN_EMAIL,
-                DBHelper.COLUMN_COMPANY,
-                DBHelper.COLUMN_LINKEDIN_URL,
-                DBHelper.COLUMN_PHOTO_URI,
-                DBHelper.COLUMN_SYNC};
+
 
         String[] selectionArgs = new String[]{"%" + query + "%"};
         //Cursor cursor = null;
         Cursor cursor = getReadableDatabase().query(DBHelper.TABLE_NAME_CONTACTS,
-                columns,
+                ALL_CONTACT_COLUMNS,
                 DBHelper.COLUMN_NAME + " LIKE ?",
                 selectionArgs,
                 null,
