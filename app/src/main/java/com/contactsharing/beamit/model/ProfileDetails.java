@@ -1,7 +1,5 @@
 package com.contactsharing.beamit.model;
 
-import android.graphics.Bitmap;
-
 import com.contactsharing.beamit.resources.user.User;
 
 /**
@@ -18,9 +16,9 @@ public class ProfileDetails {
     private String email;
     private String company;
     private String linkedinUrl;
-    private Bitmap photo;
+    private String photoUri;
 
-    //indiates whether profile details are sync with server or not.
+    //indicates whether profile details are sync with server or not.
     private boolean sync;
 
     public ProfileDetails(){
@@ -45,7 +43,7 @@ public class ProfileDetails {
                           String email,
                           String company,
                           String linkedinUrl,
-                          Bitmap photo,
+                          String photoUri,
                           boolean sync) {
         super();
         if (id == null) {
@@ -59,7 +57,7 @@ public class ProfileDetails {
         this.email = email;
         this.company = company;
         this.linkedinUrl = linkedinUrl;
-        this.photo = photo;
+        this.photoUri = photoUri;
         this.sync = sync;
     }
 
@@ -115,12 +113,12 @@ public class ProfileDetails {
         this.linkedinUrl = linkedinUrl;
     }
 
-    public Bitmap getPhoto() {
-        return photo;
+    public String getPhotoUri() {
+        return photoUri;
     }
 
-    public void setPhoto(Bitmap photo) {
-        this.photo = photo;
+    public void setPhotoUri(String photoUri) {
+        this.photoUri = photoUri;
     }
 
     public boolean isSync() {

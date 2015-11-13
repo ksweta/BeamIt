@@ -13,8 +13,9 @@ import android.widget.TextView;
 import com.contactsharing.beamit.db.DBHelper;
 import com.contactsharing.beamit.model.ContactDetails;
 import com.contactsharing.beamit.utility.ApplicationConstants;
-import com.contactsharing.beamit.utility.JsonConverter;
+import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.util.List;
 
 /**
@@ -25,12 +26,14 @@ public class ContactNamesRecyclerViewAdapter
     private final static String TAG = ContactNamesRecyclerViewAdapter.class.getSimpleName();
     public final static String EXTRA_MESSAGE = "com.contactsharing.beamit.ContactNamesRecyclerViewAdapter";
     private List<ContactDetails> mContacts;
-    private DataSetChange mDataSetChangeHandler;
+    private Context mContext;
     private DBHelper mDb;
     private int mItemLayout;
     private OnRecyclerViewItemClickListener<ContactDetails> mItemClickListener;
 
-    public ContactNamesRecyclerViewAdapter(List<ContactDetails> contacts, int itemLayout, DBHelper db) {
+
+    public ContactNamesRecyclerViewAdapter(Context context, List<ContactDetails> contacts, int itemLayout, DBHelper db) {
+        mContext = context;
         mContacts = contacts;
         mItemLayout = itemLayout;
         mDb = db;
@@ -49,8 +52,13 @@ public class ContactNamesRecyclerViewAdapter
         viewHolder.mTvContactPhone.setText(contact.getPhone());
         viewHolder.mTvContactCompany.setText(contact.getCompany());
         viewHolder.mLinkedinUrl.setText(contact.getLinkedinUrl());
-        if (contact.getPhoto() != null) {
-            viewHolder.mIvContactImage.setImageBitmap(contact.getPhoto());
+
+        if (contact.getPhotoUri() != null) {
+            //TODO: Picasso will download the image asynchronously.
+            Picasso.with(mContext)
+                    .load(new File(mContext.getExternalFilesDir(null), contact.getPhotoUri()))
+                    .into(viewHolder.mIvContactImage);
+
         } else {
             viewHolder.mIvContactImage.setImageResource(R.drawable.default_contact_icon);
         }
@@ -118,6 +126,7 @@ public class ContactNamesRecyclerViewAdapter
      */
     public class ContactDetailsViewHolder extends RecyclerView.ViewHolder {
         public ImageView mIvContactImage;
+        public String phtoUri;
         public TextView mTvContactName;
         public TextView mTvContactPhone;
         public TextView mTvContactCompany;

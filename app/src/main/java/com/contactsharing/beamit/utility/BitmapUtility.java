@@ -1,15 +1,22 @@
 package com.contactsharing.beamit.utility;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.util.Log;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 
 /**
  * Created by kumari on 10/24/15.
  */
 public class BitmapUtility {
+    private static final String TAG = BitmapUtility.class.getSimpleName();
+
     /**
      * This method convert bitmap to bytes.
      *
@@ -32,12 +39,17 @@ public class BitmapUtility {
      * @return
      */
     public static Bitmap getBytesToBitmap(byte[] bytes) {
+
         if (bytes == null || bytes.length == 0) {
             return null;
         }
 
-        return BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        Bitmap bitmap =  BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
 
+        if(bitmap == null){
+            Log.d(TAG, "bitmap is null");
+        }
+        return bitmap;
     }
 
     /**
@@ -56,5 +68,37 @@ public class BitmapUtility {
         Matrix matrix = new Matrix();
         matrix.postScale(scaleWidth, scaleHeight);
         return Bitmap.createBitmap(oldBitmap, 0, 0, width, height, matrix, false);
+    }
+
+    /**
+     * This method stores the image in
+     * @param context
+     * @param bitmap
+     * @param directory
+     * @return
+     */
+    public static boolean storeImageToInternalStorage(Context context, Bitmap bitmap, String directory, String photoName ){
+        File fileDirectory = new File(context.getApplicationContext().getExternalFilesDir(null), directory);
+        if(!(fileDirectory.mkdirs() || fileDirectory.isDirectory())){
+            Log.d(TAG, String.format("couldn't create directory: %s", directory));
+            return false;
+        }
+        try {
+            FileOutputStream out = new FileOutputStream(new File(fileDirectory, photoName));
+
+            if (bitmap == null) {
+                Log.e(TAG, "bitmap is null");
+            }
+
+            bitmap.compress(Bitmap.CompressFormat.JPEG,
+                    100, //TODO: Need to
+                    out);
+            out.flush();
+            out.close();
+        } catch (Exception e) {
+            Log.e(TAG, "Error while saving image", e);
+            return false;
+        }
+        return true;
     }
 }

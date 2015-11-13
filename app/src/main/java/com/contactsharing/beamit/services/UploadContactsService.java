@@ -3,6 +3,7 @@ package com.contactsharing.beamit.services;
 import android.app.IntentService;
 import android.content.Intent;
 import android.content.Context;
+import android.graphics.Bitmap;
 import android.util.Log;
 
 import com.contactsharing.beamit.db.DBHelper;
@@ -16,7 +17,6 @@ import com.squareup.okhttp.ResponseBody;
 
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.util.ArrayList;
 import java.util.List;
 
 import retrofit.Call;
@@ -102,7 +102,7 @@ public class UploadContactsService extends IntentService {
      * @return retrun true if uploaded otherwise false.
      */
     private boolean handlePhotoUpload(ContactDetails contactDetails){
-        if(contactDetails.getPhoto() == null) {
+        if(contactDetails.getPhotoUri() == null) {
             Log.e(TAG, String.format("Didn't find any photo for local contact id: %d, contact id: %d, owner:%d  ",
                     contactDetails.getId(),
                     contactDetails.getContactId(),
@@ -111,7 +111,9 @@ public class UploadContactsService extends IntentService {
         }
         // Upload photo
         BeamItService service = BeamItServiceTransport.getService();
-        RequestBody requestBody = UtilityMethods.getPhotoRequestBody(contactDetails.getPhoto(),
+        // TODO: Fetch the bitmap
+        Bitmap bitmap = null;
+        RequestBody requestBody = UtilityMethods.getPhotoRequestBody(bitmap,
                 contactDetails.getContactId(),
                 "contact");
         Call<Void> call = service.uploadContactPhoto(contactDetails.getContactId(), requestBody);

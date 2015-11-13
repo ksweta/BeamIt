@@ -4,6 +4,7 @@ import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
@@ -18,23 +19,37 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.contactsharing.beamit.R;
 import com.contactsharing.beamit.db.DBHelper;
 import com.contactsharing.beamit.model.ContactDetails;
 import com.contactsharing.beamit.services.UploadContactsService;
+import com.contactsharing.beamit.transport.BeamItService;
+import com.contactsharing.beamit.transport.BeamItServiceTransport;
+import com.contactsharing.beamit.utility.ApplicationConstants;
+import com.contactsharing.beamit.utility.BitmapUtility;
+import com.contactsharing.beamit.utility.UtilityMethods;
+import com.squareup.okhttp.ResponseBody;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.HttpURLConnection;
 import java.util.Arrays;
 import java.util.List;
 
+import retrofit.Call;
+import retrofit.Response;
+
 public class TestActivity extends ActionBarActivity {
     private static final String TAG = TestActivity.class.getSimpleName();
-
+    private ImageView iv_test;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test);
+        iv_test = (ImageView) findViewById(R.id.iv_test);
     }
 
     @Override
@@ -83,20 +98,45 @@ public class TestActivity extends ActionBarActivity {
 
     }
 
-    private class TestAsyncTask extends AsyncTask<Void, Void, Void> {
+    private class TestAsyncTask extends AsyncTask<Void, Void, Bitmap> {
 
         @Override
-        protected Void doInBackground(Void... voids) {
+        protected Bitmap doInBackground(Void... voids) {
 
-            DBHelper db = new DBHelper(getApplicationContext());
-            List<ContactDetails> contactdetails = db.getCotnactsTobeSynced(true);
-            for(ContactDetails contact : contactdetails){
-                Log.d(TAG, String.format("contact local id: %d, cotnact id: %d, owner id: %d",
-                        contact.getId(),
-                        contact.getContactId(),
-                        contact.getOwnerId()));
+            BeamItService service = BeamItServiceTransport.getService();
+//            Call<ResponseBody> responseCall = service.downloadUserProfilePhoto(11);
+            Call<ResponseBody> responseCall = service.downloadContactPhoto(12);
+            Response<ResponseBody> response = null;
+            Bitmap bitmap = null;
+            try {
+                response = responseCall.execute();
+            } catch(IOException e){
+                Log.e(TAG, "Coudln't get contact photo ",e);
             }
-            return null;
+            if (response == null || response.code() != HttpURLConnection.HTTP_OK){
+                Log.i(TAG, String.format("Coudln't get contact photo => code: %d", response.code()));
+            } else {
+
+                try {
+
+                    bitmap =  BitmapUtility.getBytesToBitmap(response.body().bytes());
+
+                    if(bitmap == null) {
+                        Log.d(TAG, "bitmap is still null");
+                    } else {
+                        Log.d(TAG, "bitmap is not null");
+                    }
+
+                } catch (IOException e) {
+                    Log.e(TAG, "couldn't fetch image", e);
+                }
+            }
+            return bitmap;
+        }
+
+        @Override
+        protected void onPostExecute(Bitmap bitmap){
+            iv_test.setImageBitmap(bitmap);
         }
     }
 }
