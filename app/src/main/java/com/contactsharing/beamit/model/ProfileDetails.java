@@ -141,6 +141,18 @@ public class ProfileDetails {
         return user;
     }
 
+    public static ProfileDetails fromUser(User user){
+        return new ProfileDetails(null,
+                user.getId(),
+                user.getName(),
+                user.getPhone(),
+                user.getEmail(),
+                user.getCompany(),
+                user.getLinkedinUrl(),
+                null, // Photo uri may not be available so set to null.
+                true);
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;

@@ -115,6 +115,10 @@
             android:name=".services.UploadContactsService"
             android:exported="false" >
         </service>
+        <service
+            android:name=".services.DownloadUserInfoService"
+            android:exported="false" >
+        </service>
     </application>
 
 </manifest>
