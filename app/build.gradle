@@ -24,4 +24,17 @@ dependencies {
     compile 'com.android.support:appcompat-v7:21.0.3'
     compile 'com.android.support:recyclerview-v7:21.0.3'
     compile 'com.android.support:support-v4:21.0.+'
+    compile 'com.android.support:cardview-v7:21.+'
+    compile 'com.android.support:recyclerview-v7:21.+'
+    compile 'com.google.code.gson:gson:2.2.4'
+    compile files('libs/socialauth-android-3.2.jar')
+    compile files('libs/socialauth-4.9.jar')
+    // Libraries related with retrofit
+    compile 'com.google.code.gson:gson:2.4'
+    compile 'com.squareup.retrofit:retrofit:2.0.0-beta2'
+    compile 'com.squareup.retrofit:converter-gson:2.0.0-beta2'
+    compile 'com.squareup.okhttp:okhttp:2.4.0'
+    compile 'com.squareup.okhttp:logging-interceptor:2.6.0-SNAPSHOT'
+    // Picasso
+    compile 'com.squareup.picasso:picasso:2.5.2'
 }

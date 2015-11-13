@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/card"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    card_view:cardCornerRadius="5dp"
+    card_view:cardElevation="5dp"
+    android:layout_margin="5dp"
+    android:background="#9FA8DA">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#C5CAE9">
+
+        <ImageView
+            android:id="@+id/iv_contact_item_photo"
+            android:src="@drawable/default_contact_icon"
+            android:layout_centerVertical="true"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:layout_margin="5dp"
+            android:scaleType="centerCrop"
+            android:hint="@string/iv_contact_photo"
+            />
+        <TextView
+            android:id="@+id/tv_contact_item_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="3dp"
+            android:layout_toEndOf="@id/iv_contact_item_photo"
+            android:textSize="16sp"
+            android:text="Name"
+            />
+
+        <TextView
+            android:id="@+id/tv_contact_item_phone"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:layout_toEndOf="@id/iv_contact_item_photo"
+            android:layout_below="@id/tv_contact_item_name"
+            android:layout_margin="3dp"
+            android:text="Phone"
+            android:textSize="16sp"
+            />
+        <TextView
+            android:id="@+id/tv_contact_item_company"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/iv_contact_item_photo"
+            android:layout_below="@id/tv_contact_item_phone"
+            android:layout_margin="3dp"
+            android:textSize="16sp"
+            android:text="Company: "
+            />
+        <TextView
+            android:id="@+id/tv_contact_item_linkedinurl"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toEndOf="@id/iv_contact_item_photo"
+            android:layout_below="@id/tv_contact_item_company"
+            android:layout_margin="3dp"
+            android:textSize="16sp"
+            android:text="www.linkeding.com/name"
+            />
+    </RelativeLayout>
+</android.support.v7.widget.CardView>

@@ -4,20 +4,39 @@
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin"
+    android:background="#E8EAF6"
     tools:context="com.contactsharing.beamit.ContactListActivity">
+
 
     <android.support.v4.widget.SwipeRefreshLayout
         android:id="@+id/activity_main_swipe_refresh_layout"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="#E8EAF6">
 
-        <ListView
-            android:id="@+id/activity_main_listview"
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/activity_main_recyclerview"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            >
-        </ListView>
+            android:background="#E8EAF6"
+            />
 
     </android.support.v4.widget.SwipeRefreshLayout>
-    
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentTop="true"
+        android:id="@+id/frameLayout">
+        <ImageButton
+            android:layout_margin="15dp"
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/share_contact"
+            android:background="@drawable/circle"
+            android:id="@+id/imageButton"
+            android:layout_gravity="right|bottom" />
+    </FrameLayout>
 </RelativeLayout>

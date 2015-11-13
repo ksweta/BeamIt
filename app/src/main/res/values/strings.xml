@@ -1,7 +1,5 @@
 <resources>
     <string name="app_name">BeamIt</string>
-
-    <string name="hello_world">Hello world!</string>
     <string name="email">Email</string>
     <string name="sign_in">Sign In</string>
     <string name="password">Password</string>
@@ -10,4 +8,26 @@
     <string name="action_settings">Settings</string>
     <string name="title_activity_sign_up">SignUpActivity</string>
     <string name="title_activity_contact_list">ContactListActivity</string>
+    <string name="title_activity_send">SendActivity</string>
+    <string name="title_activity_display">DisplayCardActivity</string>
+    <string name="search_title">Search</string>
+    <string name="title_activity_test">TestActivity</string>
+    <string name="search_hint">Search contacts</string>
+    <string name="title_activity_search_results">SearchResultsActivity</string>
+    <string name="iv_contact_photo">Contact photoUri</string>
+    <string name="company">Company name</string>
+    <string name="name">Full name</string>
+    <string name="linkedin_url">Linkedin URL</string>
+    <string name="save">save</string>
+    <string name="cancel">Cancel</string>
+    <string name="linkedin_import">Linkedin import</string>
+    <string name="title_activity_edit_profile">Edit profile</string>
+    <string name="title_activity_display_card">Contact details</string>
+    <string name="action_edit_profile">Edit profile</string>
+    <string name="action_logout">Logout</string>
+    <string name="email_or_phone">Email or Phone</string>
+    <string name="invite">Invite</string>
+    <string name="action_import_contact">Import contact</string>
+    <string name="action_test">test</string>
+    <string name="delete_account">Delete account</string>
 </resources>
