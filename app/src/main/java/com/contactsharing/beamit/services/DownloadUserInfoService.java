@@ -23,14 +23,12 @@ import retrofit.Call;
 import retrofit.Response;
 
 /**
- * An {@link IntentService} subclass for handling asynchronous task requests in
- * a service on a separate handler thread.
- * <p/>
- * helper methods.
+ * DownloadUserInfoService to download user information and persists in local storage.
+ *
  */
 public class DownloadUserInfoService extends IntentService {
 
-    private static final String EXTRA_USER_ID = "DownloadUserInfoService.USER_ID";
+    private static final String EXTRA_USER_ID = "DownloadUserInfoService.EXTRA_USER_ID";
     private static final String TAG = DownloadUserInfoService.class.getSimpleName();
 
     /**
@@ -119,7 +117,7 @@ public class DownloadUserInfoService extends IntentService {
                 Log.e(TAG, "Couldn't convert bytes to bitmap");
                 return false;
             }
-            String photoFileName = UtilityMethods.photoFileNameFormatter(ApplicationConstants.CONTACT_PHOTO_FILE_PREFIX,
+            String photoFileName = UtilityMethods.photoFileNameFormatter(ApplicationConstants.PROFILE_PHOTO_FILE_PREFIX,
                     ApplicationConstants.PHOTO_FILE_EXTENSION,
                     profileDetails.getUserId());
             if(BitmapUtility.storeImageToInternalStorage(getApplicationContext(),
