@@ -27,6 +27,7 @@ import com.contactsharing.beamit.model.ContactDetails;
 import com.contactsharing.beamit.model.ProfileDetails;
 import com.contactsharing.beamit.resources.signin.SigninRequest;
 import com.contactsharing.beamit.resources.signin.SigninResponse;
+import com.contactsharing.beamit.services.DownloadContactsService;
 import com.contactsharing.beamit.services.DownloadUserInfoService;
 import com.contactsharing.beamit.transport.BeamItService;
 import com.contactsharing.beamit.transport.BeamItServiceTransport;
@@ -111,9 +112,11 @@ public class SigninActivity extends Activity {
             Log.d(TAG, "User profile not found on phone syncing information.");
 
             DownloadUserInfoService.startDownloadUserInfo(getApplicationContext(), userId);
-            //TODO: Need to sync contact details as well.
-
+            //TODO: Need to revisit this.
+            db.deleteContactWithoutCurrentOwner(userId);
+            DownloadContactsService.startDownloadContacts(getApplicationContext(), userId);
         }
+        db.close();
     }
     private void authenticateSignIn(){
         String email = etEmail.getText().toString();

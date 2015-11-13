@@ -39,6 +39,10 @@ public class ContactNamesRecyclerViewAdapter
         mDb = db;
     }
 
+    public void setContacts(List<ContactDetails> contacts){
+        mContacts = contacts;
+        notifyDataSetChanged();
+    }
     @Override
     public ContactDetailsViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View inflatedView = LayoutInflater.from(viewGroup.getContext()).inflate(mItemLayout, viewGroup, false);

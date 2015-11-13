@@ -162,7 +162,7 @@ public class DownloadContactsService extends IntentService {
     private void saveContactDetailsList(List<ContactDetails> contactDetailsList){
         DBHelper db = new DBHelper(this);
         for(ContactDetails contactDetails: contactDetailsList) {
-            db.insertContact(contactDetails);
+            db.updateContactByContactId(contactDetails);
         }
     }
 }

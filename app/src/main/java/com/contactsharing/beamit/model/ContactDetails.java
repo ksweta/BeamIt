@@ -190,4 +190,62 @@ public class ContactDetails implements Model {
 
         return contactDetails;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof ContactDetails)) return false;
+
+        ContactDetails that = (ContactDetails) o;
+
+        if (isSynced() != that.isSynced()) return false;
+        if (getId() != null ? !getId().equals(that.getId()) : that.getId() != null) return false;
+        if (getOwnerId() != null ? !getOwnerId().equals(that.getOwnerId()) : that.getOwnerId() != null)
+            return false;
+        if (getContactId() != null ? !getContactId().equals(that.getContactId()) : that.getContactId() != null)
+            return false;
+        if (getName() != null ? !getName().equals(that.getName()) : that.getName() != null)
+            return false;
+        if (getPhone() != null ? !getPhone().equals(that.getPhone()) : that.getPhone() != null)
+            return false;
+        if (getEmail() != null ? !getEmail().equals(that.getEmail()) : that.getEmail() != null)
+            return false;
+        if (getCompany() != null ? !getCompany().equals(that.getCompany()) : that.getCompany() != null)
+            return false;
+        if (getLinkedinUrl() != null ? !getLinkedinUrl().equals(that.getLinkedinUrl()) : that.getLinkedinUrl() != null)
+            return false;
+        return !(getPhotoUri() != null ? !getPhotoUri().equals(that.getPhotoUri()) : that.getPhotoUri() != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = getId() != null ? getId().hashCode() : 0;
+        result = 31 * result + (getOwnerId() != null ? getOwnerId().hashCode() : 0);
+        result = 31 * result + (getContactId() != null ? getContactId().hashCode() : 0);
+        result = 31 * result + (getName() != null ? getName().hashCode() : 0);
+        result = 31 * result + (getPhone() != null ? getPhone().hashCode() : 0);
+        result = 31 * result + (getEmail() != null ? getEmail().hashCode() : 0);
+        result = 31 * result + (getCompany() != null ? getCompany().hashCode() : 0);
+        result = 31 * result + (getLinkedinUrl() != null ? getLinkedinUrl().hashCode() : 0);
+        result = 31 * result + (getPhotoUri() != null ? getPhotoUri().hashCode() : 0);
+        result = 31 * result + (isSynced() ? 1 : 0);
+        return result;
+    }
+
+    @Override
+    public String toString() {
+        return "ContactDetails{" +
+                "id=" + id +
+                ", ownerId=" + ownerId +
+                ", contactId=" + contactId +
+                ", name='" + name + '\'' +
+                ", phone='" + phone + '\'' +
+                ", email='" + email + '\'' +
+                ", company='" + company + '\'' +
+                ", linkedinUrl='" + linkedinUrl + '\'' +
+                ", photoUri='" + photoUri + '\'' +
+                ", synced=" + synced +
+                '}';
+    }
 }

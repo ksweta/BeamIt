@@ -61,6 +61,8 @@ import retrofit.Response;
 
 public class ContactListActivity extends ActionBarActivity {
     private static final String TAG = ContactListActivity.class.getSimpleName();
+    private static final String ACTION_NDEF_DISCOVERED = "android.nfc.action.NDEF_DISCOVERED";
+    private static final String ACTION_REFRESH_CONTACTS = "ContactListActivity.ACTION_CONTACT_REFRESH";
     private static final int CONTACT_PICKER_RESULT = 1503;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private ImageButton FAB;
@@ -82,7 +84,7 @@ public class ContactListActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact_list);
 
-        //NFC releated
+        //NFC related
         PackageManager pm = this.getPackageManager();
         // Check whether NFC is available on device
         if (!pm.hasSystemFeature(PackageManager.FEATURE_NFC)) {
@@ -155,8 +157,11 @@ public class ContactListActivity extends ActionBarActivity {
                     @Override
                     public void run() {
                         mSwipeRefreshLayout.setRefreshing(false);
+
                     }
                 }, 2500);
+                //TODO: fix it.
+               handleContactsDownloaded();
             }
         });
 
@@ -173,8 +178,24 @@ public class ContactListActivity extends ActionBarActivity {
     public void onNewIntent(Intent intent) {
         String action = intent.getAction();
         Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+
+        Log.d(TAG, String.format("onNewIntent() action: %s, tag: %s", action, tag.toString()));
+        if (ACTION_NDEF_DISCOVERED.equals(action)) {
+            handleNFCData(intent);
+        } else if(ACTION_REFRESH_CONTACTS.equals(action)){
+            handleContactsDownloaded();
+        } else {
+            super.onNewIntent(intent);
+        }
+    }
+
+    private void handleContactsDownloaded(){
+        Log.d(TAG, "Updated contact list.");
+        mContactNamesRecyclerViewAdapter.setContacts(mDb.readAllContacts());
+    }
+
+    private void handleNFCData(Intent intent){
         String receivedString = "";
-        String s = action + "\n\n" + tag.toString();
         String s1 = "UTF-8";
         String s2 = "UTF-16";
 
@@ -203,8 +224,8 @@ public class ContactListActivity extends ActionBarActivity {
         Toast.makeText(this, "Received string: " + receivedString, Toast.LENGTH_LONG).show();
         Integer sharedContactId = Integer.parseInt(receivedString);
         new DownloadSharedContactTask().execute(sharedContactId);
-    }
 
+    }
     @Override
     public void onResume() {
         super.onResume();

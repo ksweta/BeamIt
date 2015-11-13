@@ -168,7 +168,7 @@ public class DBHelper extends SQLiteOpenHelper {
         return getContacts(cursor);
     }
 
-    public int updateContact(ContactDetails contact) {
+    public int updateContactById(ContactDetails contact) {
         return getWritableDatabase().update(DBHelper.TABLE_NAME_CONTACTS,
                 getValues(contact),
                 //Where clause
@@ -176,6 +176,46 @@ public class DBHelper extends SQLiteOpenHelper {
                 new String[]{contact.getId().toString()});
     }
 
+    /**
+     * Upate contact details based on the ContactId.
+     * @param contactDetails
+     * @return
+     */
+    public long updateContactByContactId(ContactDetails contactDetails) {
+        Log.d(TAG, String.format("ProfileDetails : %s", contactDetails.toString()));
+        long result = getWritableDatabase().insertWithOnConflict(
+                DBHelper.TABLE_NAME_CONTACTS,
+                DBHelper.COLUMN_CONTACT_ID,
+                getValues(contactDetails),
+                SQLiteDatabase.CONFLICT_REPLACE);
+        Log.i(TAG, String.format("Updated row: %d", result));
+        return result;
+    }
+
+    /**
+     * This Method deletes all contacts.
+     */
+    public void deleteAllContact(){
+        int count = getWritableDatabase().delete(DBHelper.TABLE_NAME_CONTACTS, null, null);
+        Log.d(TAG, String.format("deleteAllContact => deleted %d records", count));
+    }
+
+    /**
+     * Deletes the contacts which are not associated with current user.
+     * @param ownerId
+     */
+    public void deleteContactWithoutCurrentOwner(Integer ownerId){
+        int count = getWritableDatabase().delete(DBHelper.TABLE_NAME_CONTACTS,
+                DBHelper.COLUMN_OWNER_ID + "<>?",  // Not equal to operator, null safe
+                new String[]{String.valueOf(ownerId)});
+        Log.d(TAG, String.format("deleteContactWithoutCurrentOwner => deleted %d records", count));
+    }
+
+    /**
+     * Delete the provided method from the store.
+     * @param contact
+     * @return
+     */
     public int deleteContact(ContactDetails contact) {
         return getWritableDatabase().delete(DBHelper.TABLE_NAME_CONTACTS,
                 DBHelper.COLUMN_ID + "=?",
@@ -217,7 +257,6 @@ public class DBHelper extends SQLiteOpenHelper {
             }
         }
     }
-
 
     /**
      * Get the contact details which matches with the given contact id.

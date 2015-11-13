@@ -1,18 +1,8 @@
 package com.contactsharing.beamit;
 
-import android.app.PendingIntent;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
-import android.nfc.NdefMessage;
-import android.nfc.NdefRecord;
-import android.nfc.NfcAdapter;
-import android.nfc.Tag;
-import android.nfc.tech.NfcF;
 import android.os.AsyncTask;
-import android.os.Build;
-import android.os.Parcelable;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,24 +10,14 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.Toast;
 
-import com.contactsharing.beamit.R;
-import com.contactsharing.beamit.db.DBHelper;
-import com.contactsharing.beamit.model.ContactDetails;
-import com.contactsharing.beamit.services.UploadContactsService;
 import com.contactsharing.beamit.transport.BeamItService;
 import com.contactsharing.beamit.transport.BeamItServiceTransport;
-import com.contactsharing.beamit.utility.ApplicationConstants;
 import com.contactsharing.beamit.utility.BitmapUtility;
-import com.contactsharing.beamit.utility.UtilityMethods;
 import com.squareup.okhttp.ResponseBody;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.HttpURLConnection;
-import java.util.Arrays;
-import java.util.List;
 
 import retrofit.Call;
 import retrofit.Response;
@@ -93,7 +73,6 @@ public class TestActivity extends ActionBarActivity {
 
 
     public void onClick(View view){
-//        UploadContactsService.uploadContacts(this);
      new TestAsyncTask().execute();
 
     }
@@ -104,7 +83,6 @@ public class TestActivity extends ActionBarActivity {
         protected Bitmap doInBackground(Void... voids) {
 
             BeamItService service = BeamItServiceTransport.getService();
-//            Call<ResponseBody> responseCall = service.downloadUserProfilePhoto(11);
             Call<ResponseBody> responseCall = service.downloadContactPhoto(12);
             Response<ResponseBody> response = null;
             Bitmap bitmap = null;

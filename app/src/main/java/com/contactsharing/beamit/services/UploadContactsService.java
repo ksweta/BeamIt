@@ -53,7 +53,7 @@ public class UploadContactsService extends IntentService {
             for(ContactDetails contactDetails: contactDetailsList) {
                 if(handleContactSync(contactDetails) && handlePhotoUpload(contactDetails)){
                     contactDetails.setSynced(true);
-                    db.updateContact(contactDetails);
+                    db.updateContactById(contactDetails);
                 }
             }
             db.close();
