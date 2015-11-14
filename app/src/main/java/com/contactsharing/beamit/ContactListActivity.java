@@ -31,6 +31,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -150,6 +151,25 @@ public class ContactListActivity extends AppCompatActivity {
             }
         });
 
+        //Swipe and dismiss
+        ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                ContactNamesRecyclerViewAdapter.ContactDetailsViewHolder contactDetailsViewHolder = ( ContactNamesRecyclerViewAdapter.ContactDetailsViewHolder)viewHolder;
+                Log.d(TAG, String.format("Addapter position: %d, contactDetails: %s",
+                        viewHolder.getAdapterPosition(),
+                        contactDetailsViewHolder.contactDetails));
+                mContactNamesRecyclerViewAdapter.remove(contactDetailsViewHolder.contactDetails);
+            }
+        };
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
+        itemTouchHelper.attachToRecyclerView(mRecyclerView);
 
         mSwipeRefreshLayout.setColorSchemeResources(R.color.orange, R.color.green, R.color.blue);
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {

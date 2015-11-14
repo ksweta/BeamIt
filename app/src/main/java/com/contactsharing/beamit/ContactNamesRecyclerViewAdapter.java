@@ -97,6 +97,7 @@ public class ContactNamesRecyclerViewAdapter
         if (position > -1) {
             mContacts.remove(position);
             notifyItemRemoved(position);
+            mDb.deleteContact(contactDetails);
         }
     }
 
@@ -135,7 +136,7 @@ public class ContactNamesRecyclerViewAdapter
         public TextView mTvContactPhone;
         public TextView mTvContactCompany;
         public TextView mLinkedinUrl;
-        public  ContactDetails contactDetails;
+        public ContactDetails contactDetails;
 
         public ContactDetailsViewHolder(View itemView) {
             super(itemView);
