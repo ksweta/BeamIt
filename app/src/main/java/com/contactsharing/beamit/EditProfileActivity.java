@@ -27,8 +27,6 @@ import com.squareup.okhttp.ResponseBody;
 import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
-import org.apache.http.HttpStatus;
-
 
 import org.brickred.socialauth.Profile;
 import org.brickred.socialauth.android.DialogListener;
@@ -288,7 +286,7 @@ public class EditProfileActivity extends Activity {
                 urlConnection = (HttpURLConnection) uri.openConnection();
 
                 int statusCode = urlConnection.getResponseCode();
-                if (statusCode != HttpStatus.SC_OK) {
+                if (statusCode != HttpURLConnection.HTTP_OK) {
                     return null;
                 }
 

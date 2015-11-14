@@ -25,6 +25,7 @@ import android.provider.ContactsContract;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -59,7 +60,7 @@ import java.util.Locale;
 import retrofit.Call;
 import retrofit.Response;
 
-public class ContactListActivity extends ActionBarActivity {
+public class ContactListActivity extends AppCompatActivity {
     private static final String TAG = ContactListActivity.class.getSimpleName();
     private static final String ACTION_NDEF_DISCOVERED = "android.nfc.action.NDEF_DISCOVERED";
     private static final String ACTION_REFRESH_CONTACTS = "ContactListActivity.ACTION_CONTACT_REFRESH";
@@ -148,6 +149,7 @@ public class ContactListActivity extends ActionBarActivity {
                 showContactDetails(contactDetails);
             }
         });
+
 
         mSwipeRefreshLayout.setColorSchemeResources(R.color.orange, R.color.green, R.color.blue);
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
