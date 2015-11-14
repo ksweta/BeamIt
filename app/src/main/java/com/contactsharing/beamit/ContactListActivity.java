@@ -462,6 +462,10 @@ public class ContactListActivity extends AppCompatActivity {
                 launchEditProfileActivity();
                 return true;
 
+            case R.id.action_change_password:
+                launchChangePasswordActivity();
+                return true;
+
             case R.id.action_delete_account:
                 deleteAccount();
                 return true;
@@ -503,6 +507,10 @@ public class ContactListActivity extends AppCompatActivity {
 
     private void launchEditProfileActivity(){
         startActivity(new Intent(this, EditProfileActivity.class));
+    }
+
+    private void launchChangePasswordActivity() {
+        startActivity(new Intent(this, ChangePasswordActivity.class));
     }
 
     private void launchInviteActivity(){

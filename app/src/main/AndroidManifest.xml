@@ -62,6 +62,15 @@
                 android:resource="@xml/searchable" />
         </activity>
         <activity
+            android:name=".ChangePasswordActivity"
+            android:label="@string/title_activity_change_password" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".DisplayCardActivity"
             android:label="@string/title_activity_display_card" >
             <intent-filter>
@@ -123,6 +132,7 @@
             android:name=".services.DownloadContactsService"
             android:exported="false" >
         </service>
+
     </application>
 
 </manifest>

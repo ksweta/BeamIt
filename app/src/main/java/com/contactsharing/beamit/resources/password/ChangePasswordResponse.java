@@ -5,15 +5,15 @@ import com.google.gson.annotations.SerializedName;
 /**
  * Created by kumari on 10/30/15.
  */
-public class PasswordChangeResponse {
+public class ChangePasswordResponse {
     @SerializedName("user_id")
     private String userId;
 
-    public PasswordChangeResponse(){
+    public ChangePasswordResponse(){
         //Required by the system
     }
 
-    public PasswordChangeResponse(String userId) {
+    public ChangePasswordResponse(String userId) {
         this.userId = userId;
     }
 
@@ -28,9 +28,9 @@ public class PasswordChangeResponse {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof PasswordChangeResponse)) return false;
+        if (!(o instanceof ChangePasswordResponse)) return false;
 
-        PasswordChangeResponse that = (PasswordChangeResponse) o;
+        ChangePasswordResponse that = (ChangePasswordResponse) o;
 
         return !(getUserId() != null ? !getUserId().equals(that.getUserId()) : that.getUserId() != null);
 
@@ -43,7 +43,7 @@ public class PasswordChangeResponse {
 
     @Override
     public String toString() {
-        return "PasswordChangeResponse{" +
+        return "ChangePasswordResponse{" +
                 "userId='" + userId + '\'' +
                 '}';
     }
