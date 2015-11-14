@@ -156,12 +156,12 @@ public class ContactListActivity extends ActionBarActivity {
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        //TODO: fix it.
+                        handleContactsDownloaded();
                         mSwipeRefreshLayout.setRefreshing(false);
 
                     }
-                }, 2500);
-                //TODO: fix it.
-               handleContactsDownloaded();
+                }, 0);
             }
         });
 
@@ -254,6 +254,14 @@ public class ContactListActivity extends ActionBarActivity {
                     Toast.LENGTH_SHORT).show();
             return;
         }
+
+        //Prompt user to bring the device closer to other device.
+        new AlertDialog.Builder(this)
+                .setTitle("Share contact")
+                .setMessage("Now bring this device closer to other device")
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
+
         ProfileDetails profile = mDb.fetchProfileDetails();
         Log.d(TAG, String.format("shareContact=> userId: %s", profile.getUserId()));
 
@@ -268,6 +276,7 @@ public class ContactListActivity extends ActionBarActivity {
         mNfcAdapter.enableForegroundNdefPush(this, ndefMessage);
 
     }
+
 
     /**
      * This method creates the NdefRecord from the given string.
