@@ -5,17 +5,17 @@ import com.google.gson.annotations.SerializedName;
 /**
  * Created by kumari on 10/30/15.
  */
-public class PasswordChangeRequest {
+public class ChangePasswordRequest {
     private String email;
     private String password;
     @SerializedName("new_password")
     private String newPassword;
 
-    public PasswordChangeRequest(){
+    public ChangePasswordRequest(){
         //Required by the system
     }
 
-    public PasswordChangeRequest(String email, String password, String newPassword) {
+    public ChangePasswordRequest(String email, String password, String newPassword) {
         this.email = email;
         this.password = password;
         this.newPassword = newPassword;
@@ -48,9 +48,9 @@ public class PasswordChangeRequest {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof PasswordChangeRequest)) return false;
+        if (!(o instanceof ChangePasswordRequest)) return false;
 
-        PasswordChangeRequest that = (PasswordChangeRequest) o;
+        ChangePasswordRequest that = (ChangePasswordRequest) o;
 
         if (getEmail() != null ? !getEmail().equals(that.getEmail()) : that.getEmail() != null)
             return false;
@@ -70,7 +70,7 @@ public class PasswordChangeRequest {
 
     @Override
     public String toString() {
-        return "PasswordChangeRequest{" +
+        return "ChangePasswordRequest{" +
                 "email='" + email + '\'' +
                 ", password='" + password + '\'' +
                 ", newPassword='" + newPassword + '\'' +

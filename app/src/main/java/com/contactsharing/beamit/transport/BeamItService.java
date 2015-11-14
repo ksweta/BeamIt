@@ -1,9 +1,10 @@
 package com.contactsharing.beamit.transport;
 
+import com.contactsharing.beamit.resources.invite.EmailInvite;
 import com.contactsharing.beamit.resources.contact.Contact;
 import com.contactsharing.beamit.resources.contact.ContactList;
-import com.contactsharing.beamit.resources.password.PasswordChangeRequest;
-import com.contactsharing.beamit.resources.password.PasswordChangeResponse;
+import com.contactsharing.beamit.resources.password.ChangePasswordRequest;
+import com.contactsharing.beamit.resources.password.ChangePasswordResponse;
 import com.contactsharing.beamit.resources.share.ShareContactRequest;
 import com.contactsharing.beamit.resources.signin.SigninRequest;
 import com.contactsharing.beamit.resources.signin.SigninResponse;
@@ -43,9 +44,13 @@ public interface BeamItService {
     @POST("/api/contact/share")
     Call<Contact> shareContact(@Body ShareContactRequest shareContactRequest);
 
+    /* Invite related */
+    @POST("/api/invite/email")
+    Call<Void> sendEmailInvite(@Body EmailInvite emailInvite);
+
     /* Password api */
     @POST("/api/password")
-    Call<PasswordChangeResponse> changePassword(@Body PasswordChangeRequest passwordChangeRequest);
+    Call<ChangePasswordResponse> changePassword(@Body ChangePasswordRequest passwordChangeRequest);
 
     /* Photo api */
     @POST("/api/photo/user/{userId}")
@@ -86,4 +91,4 @@ public interface BeamItService {
     @DELETE("/api/user/{userId}")
     Call<ResponseBody> deleteUserProfile(@Path("userId") Integer userId);
 
-    }
+}

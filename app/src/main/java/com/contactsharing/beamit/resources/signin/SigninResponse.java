@@ -7,20 +7,20 @@ import com.google.gson.annotations.SerializedName;
  */
 public class SigninResponse {
     @SerializedName("user_id")
-    Long userId;
+    Integer userId;
 
     public SigninResponse(){
         //Required by the system.
     }
-    public SigninResponse(Long userId) {
+    public SigninResponse(Integer userId) {
         this.userId = userId;
     }
 
-    public Long getUserId() {
+    public Integer getUserId() {
         return userId;
     }
 
-    public void setUserId(Long userId) {
+    public void setUserId(Integer userId) {
         this.userId = userId;
     }
 

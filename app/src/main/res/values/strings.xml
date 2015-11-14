@@ -30,4 +30,10 @@
     <string name="action_import_contact">Import contact</string>
     <string name="action_test">test</string>
     <string name="delete_account">Delete account</string>
+    <string name="old_password">Old password</string>
+    <string name="new_password">New Password</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="change_password">Change password</string>
+    <string name="title_activity_change_password">Change password</string>
+    <string name="title_activity_invite">Invite</string>
 </resources>

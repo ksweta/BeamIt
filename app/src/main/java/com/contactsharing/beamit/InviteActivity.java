@@ -2,51 +2,85 @@ package com.contactsharing.beamit;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.telephony.PhoneNumberUtils;
 import android.util.Log;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
+
+import com.contactsharing.beamit.db.DBHelper;
+import com.contactsharing.beamit.model.ProfileDetails;
+import com.contactsharing.beamit.resources.invite.EmailInvite;
+import com.contactsharing.beamit.transport.BeamItService;
+import com.contactsharing.beamit.transport.BeamItServiceTransport;
+
+import java.net.HttpURLConnection;
+
+import retrofit.Call;
+import retrofit.Callback;
+import retrofit.Response;
+import retrofit.Retrofit;
 
 /**
  * Created by Kumari on 11/1/15.
  */
 public class InviteActivity extends Activity {
     private static final String TAG = InviteActivity.class.getSimpleName();
-    private EditText etEmailOrPhone;
+    private EditText etEmail;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_invite);
-        etEmailOrPhone = (EditText)findViewById(R.id.et_email_or_phone);
+        etEmail = (EditText)findViewById(R.id.et_email);
     }
 
     public void onClick(View view){
         switch(view.getId()){
             case R.id.bt_invite:
-                String emailOrPhone = etEmailOrPhone.getText().toString();
+                String emailOrPhone = etEmail.getText().toString();
                 if (android.util.Patterns.EMAIL_ADDRESS.matcher(emailOrPhone).matches()) {
                     sendEmailInvite(emailOrPhone);
                 }
-                else if(PhoneNumberUtils.isWellFormedSmsAddress(emailOrPhone)){
-                    sendSmsInvite(emailOrPhone);
-                } else {
-                    Toast.makeText(this, "Please provide valid email or phone", Toast.LENGTH_SHORT).show();
-                }
+
             default:
                 Log.i(TAG, String.format("Wrong view (%d)", view.getId()));
         }
     }
+    private void sendEmailInvite(String email) {
+        DBHelper db = new DBHelper(this);
+        ProfileDetails profileDetails = db.fetchProfileDetails();
+        db.close();
 
-    private void sendSmsInvite(String phone) {
-        //TODO: Implement sms invite.
-        Toast.makeText(this, String.format("Invite SMS sent to %s", phone), Toast.LENGTH_SHORT).show();
+        if (profileDetails != null){
+            BeamItService service = BeamItServiceTransport.getService();
+            EmailInvite emailInvite = new EmailInvite(profileDetails.getUserId(), email);
+            Call<Void> call = service.sendEmailInvite(emailInvite);
+            call.enqueue(new SendEmailInviteCallback());
+        } else {
+            Log.e(TAG, "Profile details shouldn't be null here.");
+        }
     }
 
-    private void sendEmailInvite(String email) {
-        //TODO: Implement email invite
-        Toast.makeText(this, String.format("Invite email sent to %s", email), Toast.LENGTH_SHORT).show();
+    private class SendEmailInviteCallback implements Callback<Void> {
+
+        @Override
+        public void onResponse(Response<Void> response, Retrofit retrofit) {
+
+            if (response.code() == HttpURLConnection.HTTP_OK){
+                Toast.makeText(getApplicationContext(),
+                        "Invite email successfully sent",
+                        Toast.LENGTH_SHORT).show();
+            } else {
+                Log.e(TAG, String.format("Error while sending invite code: %d, response: %s",
+                        response.code(),
+                        response.body()));
+            }
+
+        }
+
+        @Override
+        public void onFailure(Throwable t) {
+            Log.e(TAG, "Error while sending invite", t);
+        }
     }
 }

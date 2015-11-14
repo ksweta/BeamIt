@@ -39,6 +39,10 @@ public class ContactNamesRecyclerViewAdapter
         mDb = db;
     }
 
+    public void setContacts(List<ContactDetails> contacts){
+        mContacts = contacts;
+        notifyDataSetChanged();
+    }
     @Override
     public ContactDetailsViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
         View inflatedView = LayoutInflater.from(viewGroup.getContext()).inflate(mItemLayout, viewGroup, false);
@@ -93,6 +97,7 @@ public class ContactNamesRecyclerViewAdapter
         if (position > -1) {
             mContacts.remove(position);
             notifyItemRemoved(position);
+            mDb.deleteContact(contactDetails);
         }
     }
 
@@ -131,7 +136,7 @@ public class ContactNamesRecyclerViewAdapter
         public TextView mTvContactPhone;
         public TextView mTvContactCompany;
         public TextView mLinkedinUrl;
-        public  ContactDetails contactDetails;
+        public ContactDetails contactDetails;
 
         public ContactDetailsViewHolder(View itemView) {
             super(itemView);

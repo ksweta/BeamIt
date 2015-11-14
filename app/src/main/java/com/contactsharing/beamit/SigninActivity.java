@@ -15,15 +15,20 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Parcelable;
+import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.contactsharing.beamit.db.DBHelper;
 import com.contactsharing.beamit.model.ContactDetails;
+import com.contactsharing.beamit.model.ProfileDetails;
 import com.contactsharing.beamit.resources.signin.SigninRequest;
 import com.contactsharing.beamit.resources.signin.SigninResponse;
+import com.contactsharing.beamit.services.DownloadContactsService;
+import com.contactsharing.beamit.services.DownloadUserInfoService;
 import com.contactsharing.beamit.transport.BeamItService;
 import com.contactsharing.beamit.transport.BeamItServiceTransport;
 import com.google.gson.Gson;
@@ -42,10 +47,6 @@ public class SigninActivity extends Activity {
     private static final String TAG = SigninActivity.class.getSimpleName();
     private EditText etEmail;
     private EditText etPassword;
-//    private NfcAdapter mNfcAdapter;
-    private PendingIntent mPendingIntent;
-    private IntentFilter[] mIntentFilters;
-    private String[][] mNFCTechLists;
 
     public final static String EXTRA_MESSAGE = "com.contactsharing.beamit.SigninActivity";
 
@@ -74,97 +75,19 @@ public class SigninActivity extends Activity {
             Toast.makeText(this, "Android Beam is supported on your device.",
                     Toast.LENGTH_SHORT).show();
         }
-
-//        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
-//
-//        if (mNfcAdapter != null) {
-//            Log.i(TAG, "Read an NFC tag");
-//        } else {
-//            Log.e(TAG,"This phone is not NFC enabled.");
-//        }
-//
-//        // create an intent with tag data and deliver to this activity
-//        mPendingIntent = PendingIntent.getActivity(this, 0,
-//                new Intent(this, getClass()).addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0);
-//
-//        // set an intent filter for all MIME data
-//        IntentFilter ndefIntent = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
-//        try {
-//            ndefIntent.addDataType("*/*");
-//             mIntentFilters = new IntentFilter[] { ndefIntent };
-//        } catch (Exception e) {
-//            Log.e("TagDispatch", e.toString());
-//        }
-//
-//       mNFCTechLists = new String[][] { new String[] { NfcF.class.getName() } };
-
-}
-    @Override
-    public void onNewIntent(Intent intent) {
-        String action = intent.getAction();
-        Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
-        Gson gson=new Gson();
-        String receivedString = "";
-        String s = action + "\n\n" + tag.toString();
-        String s1 = "UTF-8";
-        String s2 = "UTF-16";
-
-        // parse through all NDEF messages and their records and pick text type only
-        Parcelable[] data = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES);
-        if (data != null) {
-            try {
-                for (int i = 0; i < data.length; i++) {
-                    NdefRecord[] recs = ((NdefMessage)data[i]).getRecords();
-                    for (int j = 0; j < recs.length; j++) {
-                        if (recs[j].getTnf() == NdefRecord.TNF_WELL_KNOWN &&
-                                Arrays.equals(recs[j].getType(), NdefRecord.RTD_TEXT)) {
-                            byte[] payload = recs[j].getPayload();
-                            String textEncoding = ((payload[0] & 0200) == 0) ?  s1 : s2;
-                            int langCodeLen = payload[0] & 0077;
-                            receivedString = new String(payload, langCodeLen + 1, payload.length - langCodeLen - 1,
-                                                    textEncoding);
-                            Log.d(TAG, "receivedString: " + receivedString);
-                            //received NDEF record is in text form. So converting it into JSON object
-                            //JSONObject jsonObj = new JSONObject(receivedString);
-                            ContactDetails cd =  gson.fromJson(receivedString, ContactDetails.class);
-                            s += "Name: " + cd.getName() + ", Phone: "+ cd.getPhone() + ", email: " +
-                                    cd.getEmail();
-                        }
-                    }
-                }
-            } catch (Exception e) {
-                Log.e("TagDispatch", e.toString());
-            }
-        }
-        Intent displayIntent = new Intent(this, DisplayCardActivity.class);
-        displayIntent.putExtra(EXTRA_MESSAGE, receivedString );
-        startActivity(displayIntent);
-        Log.d(TAG, s);
-        Toast.makeText(this, s, Toast.LENGTH_LONG).show();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-
-//        if (mNfcAdapter != null) {
-//            mNfcAdapter.enableForegroundDispatch(this, mPendingIntent, mIntentFilters, mNFCTechLists);
-//        } else {
-//            Log.d(TAG, "mNFCAdapter is null");
-//        }
-
     }
 
     @Override
     public void onPause() {
         super.onPause();
-
-//        if (mNfcAdapter != null)
-//            mNfcAdapter.disableForegroundDispatch(this);
     }
 
     public void onClick(View view){
-        Intent intent = null;
         switch(view.getId()){
             case R.id.bt_sign_in:
                 authenticateSignIn();
@@ -182,6 +105,19 @@ public class SigninActivity extends Activity {
         finish();
     }
 
+    public void syncUserProfile(Integer userId){
+        DBHelper db = new DBHelper(this);
+        ProfileDetails userProfile = db.fetchProfileDetails();
+        if (userProfile == null || !userProfile.getUserId().equals(userId)) {
+            Log.d(TAG, "User profile not found on phone syncing information.");
+
+            DownloadUserInfoService.startDownloadUserInfo(getApplicationContext(), userId);
+            //TODO: Need to revisit this.
+            db.deleteContactWithoutCurrentOwner(userId);
+            DownloadContactsService.startDownloadContacts(getApplicationContext(), userId);
+        }
+        db.close();
+    }
     private void authenticateSignIn(){
         String email = etEmail.getText().toString();
         String password = etPassword.getText().toString();
@@ -199,6 +135,8 @@ public class SigninActivity extends Activity {
                                 response.body()));
 
                 if(response.code() == HttpURLConnection.HTTP_OK) {
+                    //Sync user profile.
+                    syncUserProfile(signinResponse.getUserId());
                     goToContactListActivit();
                 } else if (response.code() == HttpURLConnection.HTTP_UNAUTHORIZED) {
                     Toast.makeText(getApplicationContext(),

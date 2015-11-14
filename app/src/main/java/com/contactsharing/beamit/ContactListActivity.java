@@ -25,11 +25,13 @@ import android.provider.ContactsContract;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import android.support.v7.widget.SearchView;
+import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageButton;
@@ -59,8 +61,10 @@ import java.util.Locale;
 import retrofit.Call;
 import retrofit.Response;
 
-public class ContactListActivity extends ActionBarActivity {
+public class ContactListActivity extends AppCompatActivity {
     private static final String TAG = ContactListActivity.class.getSimpleName();
+    private static final String ACTION_NDEF_DISCOVERED = "android.nfc.action.NDEF_DISCOVERED";
+    private static final String ACTION_REFRESH_CONTACTS = "ContactListActivity.ACTION_CONTACT_REFRESH";
     private static final int CONTACT_PICKER_RESULT = 1503;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private ImageButton FAB;
@@ -82,7 +86,7 @@ public class ContactListActivity extends ActionBarActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact_list);
 
-        //NFC releated
+        //NFC related
         PackageManager pm = this.getPackageManager();
         // Check whether NFC is available on device
         if (!pm.hasSystemFeature(PackageManager.FEATURE_NFC)) {
@@ -147,6 +151,26 @@ public class ContactListActivity extends ActionBarActivity {
             }
         });
 
+        //Swipe and dismiss
+        ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
+            @Override
+            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
+                ContactNamesRecyclerViewAdapter.ContactDetailsViewHolder contactDetailsViewHolder = ( ContactNamesRecyclerViewAdapter.ContactDetailsViewHolder)viewHolder;
+                Log.d(TAG, String.format("Addapter position: %d, contactDetails: %s",
+                        viewHolder.getAdapterPosition(),
+                        contactDetailsViewHolder.contactDetails));
+                mContactNamesRecyclerViewAdapter.remove(contactDetailsViewHolder.contactDetails);
+            }
+        };
+
+        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
+        itemTouchHelper.attachToRecyclerView(mRecyclerView);
+
         mSwipeRefreshLayout.setColorSchemeResources(R.color.orange, R.color.green, R.color.blue);
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -154,9 +178,12 @@ public class ContactListActivity extends ActionBarActivity {
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        //TODO: fix it.
+                        handleContactsDownloaded();
                         mSwipeRefreshLayout.setRefreshing(false);
+
                     }
-                }, 2500);
+                }, 0);
             }
         });
 
@@ -173,8 +200,24 @@ public class ContactListActivity extends ActionBarActivity {
     public void onNewIntent(Intent intent) {
         String action = intent.getAction();
         Tag tag = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG);
+
+        Log.d(TAG, String.format("onNewIntent() action: %s, tag: %s", action, tag.toString()));
+        if (ACTION_NDEF_DISCOVERED.equals(action)) {
+            handleNFCData(intent);
+        } else if(ACTION_REFRESH_CONTACTS.equals(action)){
+            handleContactsDownloaded();
+        } else {
+            super.onNewIntent(intent);
+        }
+    }
+
+    private void handleContactsDownloaded(){
+        Log.d(TAG, "Updated contact list.");
+        mContactNamesRecyclerViewAdapter.setContacts(mDb.readAllContacts());
+    }
+
+    private void handleNFCData(Intent intent){
         String receivedString = "";
-        String s = action + "\n\n" + tag.toString();
         String s1 = "UTF-8";
         String s2 = "UTF-16";
 
@@ -203,8 +246,8 @@ public class ContactListActivity extends ActionBarActivity {
         Toast.makeText(this, "Received string: " + receivedString, Toast.LENGTH_LONG).show();
         Integer sharedContactId = Integer.parseInt(receivedString);
         new DownloadSharedContactTask().execute(sharedContactId);
-    }
 
+    }
     @Override
     public void onResume() {
         super.onResume();
@@ -233,6 +276,14 @@ public class ContactListActivity extends ActionBarActivity {
                     Toast.LENGTH_SHORT).show();
             return;
         }
+
+        //Prompt user to bring the device closer to other device.
+        new AlertDialog.Builder(this)
+                .setTitle("Share contact")
+                .setMessage("Now bring this device closer to other device")
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
+
         ProfileDetails profile = mDb.fetchProfileDetails();
         Log.d(TAG, String.format("shareContact=> userId: %s", profile.getUserId()));
 
@@ -247,6 +298,7 @@ public class ContactListActivity extends ActionBarActivity {
         mNfcAdapter.enableForegroundNdefPush(this, ndefMessage);
 
     }
+
 
     /**
      * This method creates the NdefRecord from the given string.
@@ -399,7 +451,6 @@ public class ContactListActivity extends ActionBarActivity {
         switch(id){
 
             case R.id.action_invite:
-                // TODO: Need to handle invite flow
                 launchInviteActivity();
                 return true;
             case R.id.action_import_contact:
@@ -408,6 +459,10 @@ public class ContactListActivity extends ActionBarActivity {
 
             case R.id.action_edit_profile:
                 launchEditProfileActivity();
+                return true;
+
+            case R.id.action_change_password:
+                launchChangePasswordActivity();
                 return true;
 
             case R.id.action_delete_account:
@@ -453,8 +508,12 @@ public class ContactListActivity extends ActionBarActivity {
         startActivity(new Intent(this, EditProfileActivity.class));
     }
 
-    private void launchInviteActivity(){
+    private void launchChangePasswordActivity() {
+        startActivity(new Intent(this, ChangePasswordActivity.class));
+    }
 
+    private void launchInviteActivity(){
+        startActivity(new Intent(this, InviteActivity.class));
     }
 
     /**
