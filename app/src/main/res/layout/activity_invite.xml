@@ -6,17 +6,18 @@
     android:gravity="center">
 
     <EditText
-        android:id="@+id/et_email_or_phone"
+        android:id="@+id/et_email"
         android:layout_width="match_parent"
-        android:hint="@string/email_or_phone"
         android:layout_height="wrap_content"
+        android:hint="@string/email"
+        android:inputType="textEmailAddress"
         android:layout_margin="10dp"/>
     <Button
         android:id="@+id/bt_invite"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/invite"
-        android:layout_below="@id/et_email_or_phone"
+        android:layout_below="@id/et_email"
         android:layout_centerHorizontal="true"
         android:onClick="onClick"/>
 </RelativeLayout>

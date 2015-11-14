@@ -35,4 +35,5 @@
     <string name="confirm_password">Confirm password</string>
     <string name="change_password">Change password</string>
     <string name="title_activity_change_password">Change password</string>
+    <string name="title_activity_invite">Invite</string>
 </resources>

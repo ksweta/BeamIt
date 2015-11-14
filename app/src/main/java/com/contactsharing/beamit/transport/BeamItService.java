@@ -1,5 +1,6 @@
 package com.contactsharing.beamit.transport;
 
+import com.contactsharing.beamit.resources.invite.EmailInvite;
 import com.contactsharing.beamit.resources.contact.Contact;
 import com.contactsharing.beamit.resources.contact.ContactList;
 import com.contactsharing.beamit.resources.password.ChangePasswordRequest;
@@ -42,6 +43,10 @@ public interface BeamItService {
 
     @POST("/api/contact/share")
     Call<Contact> shareContact(@Body ShareContactRequest shareContactRequest);
+
+    /* Invite related */
+    @POST("/api/invite/email")
+    Call<Void> sendEmailInvite(@Body EmailInvite emailInvite);
 
     /* Password api */
     @POST("/api/password")

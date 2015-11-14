@@ -89,6 +89,15 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".InviteActivity"
+            android:label="@string/title_activity_invite" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+        <activity
             android:name=".SendActivity"
             android:label="@string/title_activity_send" >
             <intent-filter>

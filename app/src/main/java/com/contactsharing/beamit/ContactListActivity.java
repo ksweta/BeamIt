@@ -451,7 +451,6 @@ public class ContactListActivity extends AppCompatActivity {
         switch(id){
 
             case R.id.action_invite:
-                // TODO: Need to handle invite flow
                 launchInviteActivity();
                 return true;
             case R.id.action_import_contact:
@@ -514,7 +513,7 @@ public class ContactListActivity extends AppCompatActivity {
     }
 
     private void launchInviteActivity(){
-
+        startActivity(new Intent(this, InviteActivity.class));
     }
 
     /**
