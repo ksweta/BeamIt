@@ -53,11 +53,13 @@ public class DownloadContactsService extends IntentService {
             final Integer userId = intent.getIntExtra(EXTRA_USER_ID, -1);
             if(userId == -1){
                 Log.e(TAG, "Couldn't get the userId");
+                return;
             }
             List<ContactDetails> contactDetailsList = downloadContacts(userId);
 
             if (contactDetailsList == null || contactDetailsList.isEmpty()){
                 Log.w(TAG, String.format("Couldn't find any contact associated with user: %d", userId));
+                return;
             }
 
             downloadContactsPhoto(contactDetailsList);
