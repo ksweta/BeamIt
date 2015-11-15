@@ -28,6 +28,7 @@ public class DisplayCardActivity extends Activity {
     private TextView tvPhone;
     private TextView tvEmail;
     private ImageView ivContactPhoto;
+    private TextView tvLinkedinUrl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,14 +39,14 @@ public class DisplayCardActivity extends Activity {
         tvPhone =  (TextView) findViewById(R.id.tv_phone);
         tvEmail =  (TextView) findViewById(R.id.tv_email);
         ivContactPhoto = (ImageView) findViewById(R.id.iv_contact_photo);
-
+        tvLinkedinUrl = (TextView) findViewById(R.id.tv_linkedin_url);
 
         Intent intent = getIntent();
         if (intent != null && intent.getIntExtra(ApplicationConstants.EXTRA_CONTACT_LOCAL_ID, -1) > -1) {
             Integer contactLocalId = intent.getIntExtra(ApplicationConstants.EXTRA_CONTACT_LOCAL_ID, -1);
            new FetchContactDetailsAsyncTask().execute(contactLocalId);
         } else {
-            Log.e(TAG, "couldn't fetch the right id from intent");
+            Log.e(TAG, "Couldn't fetch the right id from intent");
         }
 
     }
@@ -143,6 +144,10 @@ public class DisplayCardActivity extends Activity {
                             .load(new File(context.getExternalFilesDir(null),
                                     contactDetails.getPhotoUri()))
                             .into(ivContactPhoto);
+                }
+
+                if (contactDetails.getLinkedinUrl() != null && !contactDetails.getLinkedinUrl().isEmpty()){
+                    tvLinkedinUrl.setText(contactDetails.getLinkedinUrl());
                 }
             }
         }

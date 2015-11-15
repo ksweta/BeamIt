@@ -9,9 +9,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.contactsharing.beamit.db.DBHelper;
 import com.contactsharing.beamit.model.ContactDetails;
+import com.contactsharing.beamit.services.DeleteContactService;
 import com.contactsharing.beamit.utility.ApplicationConstants;
 import com.squareup.picasso.Picasso;
 
@@ -58,7 +60,6 @@ public class ContactNamesRecyclerViewAdapter
         viewHolder.mLinkedinUrl.setText(contact.getLinkedinUrl());
 
         if (contact.getPhotoUri() != null) {
-            //TODO: Picasso will download the image asynchronously.
             Picasso.with(mContext)
                     .load(new File(mContext.getExternalFilesDir(null), contact.getPhotoUri()))
                     .into(viewHolder.mIvContactImage);
@@ -95,16 +96,17 @@ public class ContactNamesRecyclerViewAdapter
     public void remove(ContactDetails contactDetails) {
         int position = mContacts.indexOf(contactDetails);
         if (position > -1) {
+            //Service will delete from store and server.
+            DeleteContactService.deleteContact(mContext, contactDetails.getId());
             mContacts.remove(position);
             notifyItemRemoved(position);
-            mDb.deleteContact(contactDetails);
+            Toast.makeText(mContext, "Business card is deleted", Toast.LENGTH_SHORT).show();
         }
     }
 
     public boolean add(ContactDetails contactDetails) {
         int position = mContacts.size();
         Integer contactId = mDb.insertContact(contactDetails);
-        Log.d(TAG, String.format("contactId: %d", contactId));
         if(contactId > -1) {
             contactDetails.setId(contactId);
             mContacts.add(position, contactDetails);

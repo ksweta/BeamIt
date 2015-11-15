@@ -141,7 +141,10 @@
             android:name=".services.DownloadContactsService"
             android:exported="false" >
         </service>
-
+        <service
+            android:name=".services.DeleteContactService"
+            android:exported="false" >
+        </service>
     </application>
 
 </manifest>

@@ -79,7 +79,7 @@ public class DownloadUserInfoService extends IntentService {
 
         BeamItService service = BeamItServiceTransport.getService();
         Call<User> call = service.getUserProfile(userId);
-        Response<User> userResponse = null;
+        Response<User> userResponse;
         try{
             userResponse = call.execute();
         } catch (IOException ex){

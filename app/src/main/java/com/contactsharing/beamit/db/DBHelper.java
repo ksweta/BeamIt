@@ -213,13 +213,13 @@ public class DBHelper extends SQLiteOpenHelper {
 
     /**
      * Delete the provided method from the store.
-     * @param contact
+     * @param id Local contact id.
      * @return
      */
-    public int deleteContact(ContactDetails contact) {
+    public int deleteContactById(Integer id) {
         return getWritableDatabase().delete(DBHelper.TABLE_NAME_CONTACTS,
                 DBHelper.COLUMN_ID + "=?",
-                new String[]{contact.getId().toString()});
+                new String[]{id.toString()});
     }
 
     /**
@@ -260,14 +260,14 @@ public class DBHelper extends SQLiteOpenHelper {
 
     /**
      * Get the contact details which matches with the given contact id.
-     * @param contactLocalId
+     * @param id
      * @return
      */
-    public ContactDetails getContact(Integer contactLocalId){
+    public ContactDetails getContact(Integer id){
 
         //Get all columns from Contacts  table.
 
-        String[] selectionArgs = new String[]{contactLocalId.toString()};
+        String[] selectionArgs = new String[]{id.toString()};
 
         Cursor cursor = getReadableDatabase().query(DBHelper.TABLE_NAME_CONTACTS,
                 ALL_CONTACT_COLUMNS,

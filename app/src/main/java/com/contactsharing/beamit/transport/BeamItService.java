@@ -36,7 +36,7 @@ public interface BeamItService {
     Call<Contact> getContact(@Path("contactId") Integer contactId);
 
     @DELETE("/api/contact/{contactId}")
-    Call<Response> deleteContact(@Path("contactId") Integer contactId);
+    Call<Void> deleteContact(@Path("contactId") Integer contactId);
 
     @GET("/api/contactlist/user/{ownerId}")
     Call<ContactList> getContactList(@Path("ownerId") Integer ownerId);
