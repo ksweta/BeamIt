@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.contactsharing.beamit" >
+    package="com.contactsharing.beamit">
 
     <uses-sdk
         android:minSdkVersion="21"
@@ -20,14 +20,19 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
+    <!-- To auto-complete the email text field in the login form with the user's emails -->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <uses-permission android:name="android.permission.READ_PROFILE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:theme="@style/Theme.AppCompat.Light" >
+        android:theme="@style/Theme.AppCompat.Light.NoActionBar">
         <activity
             android:name=".SigninActivity"
-            android:label="@string/app_name" >
+            android:label="@string/app_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -36,7 +41,7 @@
         </activity>
         <activity
             android:name=".SignUpActivity"
-            android:label="@string/title_activity_sign_up" >
+            android:label="@string/title_activity_sign_up">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -46,7 +51,7 @@
         <activity
             android:name=".ContactListActivity"
             android:label="@string/title_activity_contact_list"
-            android:launchMode="singleTop" >
+            android:launchMode="singleTop">
 
             <!-- <meta-data android:name="android.app.default_searchable" -->
             <!-- android:value=".SearchResultsActivity" /> -->
@@ -63,7 +68,7 @@
         </activity>
         <activity
             android:name=".ChangePasswordActivity"
-            android:label="@string/title_activity_change_password" >
+            android:label="@string/title_activity_change_password">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -72,7 +77,7 @@
         </activity>
         <activity
             android:name=".DisplayCardActivity"
-            android:label="@string/title_activity_display_card" >
+            android:label="@string/title_activity_display_card">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -81,7 +86,7 @@
         </activity>
         <activity
             android:name=".EditProfileActivity"
-            android:label="@string/title_activity_edit_profile" >
+            android:label="@string/title_activity_create_business_card">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -90,7 +95,7 @@
         </activity>
         <activity
             android:name=".InviteActivity"
-            android:label="@string/title_activity_invite" >
+            android:label="@string/title_activity_invite">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -99,7 +104,7 @@
         </activity>
         <activity
             android:name=".SendActivity"
-            android:label="@string/title_activity_send" >
+            android:label="@string/title_activity_send">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
@@ -108,43 +113,32 @@
         </activity>
         <activity
             android:name=".TestActivity"
-            android:label="@string/title_activity_test" >
+            android:label="@string/title_activity_test">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
-        <!-- <activity -->
-        <!-- android:name=".SearchResultsActivity" -->
-        <!-- android:launchMode="singleTop"> -->
-        <!-- <intent-filter> -->
-        <!-- <action android:name="android.intent.action.VIEW" /> -->
-        <!-- <category android:name="android.intent.category.DEFAULT" /> -->
-        <!-- </intent-filter> -->
-        <!-- <intent-filter> -->
-        <!-- <action android:name="android.intent.action.SEARCH" /> -->
-        <!-- <category android:name="android.intent.category.DEFAULT" /> -->
-        <!-- </intent-filter> -->
-        <!-- <meta-data android:name="android.app.searchable" -->
-        <!-- android:resource="@xml/searchable"/> -->
-        <!-- </activity> -->
+
         <service
             android:name=".services.UploadContactsService"
-            android:exported="false" >
-        </service>
+            android:exported="false"></service>
         <service
             android:name=".services.DownloadUserInfoService"
-            android:exported="false" >
-        </service>
+            android:exported="false"></service>
         <service
             android:name=".services.DownloadContactsService"
-            android:exported="false" >
-        </service>
+            android:exported="false"></service>
         <service
             android:name=".services.DeleteContactService"
-            android:exported="false" >
-        </service>
+            android:exported="false"></service>
+        <!-- ATTENTION: This was auto-generated to add Google Play services to your project for
+             App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information. -->
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+
     </application>
 
 </manifest>

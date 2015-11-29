@@ -3,12 +3,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.contactsharing.beamit.ContactListActivity">
 
-    <item android:id="@+id/search"
-        android:title="@string/search_title"
-        android:icon="@drawable/search"
-        app:showAsAction="always"
-        app:actionViewClass="android.support.v7.widget.SearchView"/>
+    <!--<item android:id="@+id/search"-->
+        <!--android:title="@string/search_title"-->
+        <!--android:icon="@drawable/search"-->
+        <!--app:showAsAction="always"-->
+        <!--app:actionViewClass="android.support.v7.widget.SearchView"/>-->
         <!--android:actionViewClass="android.widget.SearchView" />-->
+
+    <item android:id="@+id/action_share_contact"
+        android:title="@string/share_contact"
+        android:icon="@drawable/ic_share_contact"
+        app:showAsAction="withText"/>
+
+    <item android:id="@+id/action_invite"
+        android:title="@string/invite"
+        android:orderInCategory="40"
+        app:showAsAction="never"/>
 
     <item android:id="@+id/action_edit_profile"
         android:title="@string/action_edit_profile"
@@ -25,23 +35,18 @@
         android:orderInCategory="70"
         app:showAsAction="never" />
 
-    <item android:id="@+id/action_invite"
-        android:title="@string/invite"
+    <item android:id="@+id/action_delete_account"
+        android:title="@string/delete_account"
         android:orderInCategory="80"
         app:showAsAction="never"/>
 
-    <item android:id="@+id/action_delete_account"
-        android:title="@string/delete_account"
-        android:orderInCategory="90"
-        app:showAsAction="never"/>
     <item android:id="@+id/action_logout"
         android:title="@string/action_logout"
-        android:orderInCategory="100"
+        android:orderInCategory="90"
         app:showAsAction="never" />
 
-    <item android:id="@+id/action_test"
-        android:title="@string/action_test"
-        android:orderInCategory="100"
-        app:showAsAction="never" />
-
+    <!--<item android:id="@+id/action_test"-->
+        <!--android:title="@string/action_test"-->
+        <!--android:orderInCategory="100"-->
+        <!--app:showAsAction="never" />-->
 </menu>

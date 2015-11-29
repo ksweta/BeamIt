@@ -4,7 +4,6 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.PendingIntent;
 import android.app.SearchManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -30,13 +29,16 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 
 import android.support.v7.widget.SearchView;
-import android.support.v7.widget.helper.ItemTouchHelper;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.Toast;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.support.v7.widget.Toolbar;
+import android.widget.ViewSwitcher;
 
 import com.contactsharing.beamit.db.DBHelper;
 import com.contactsharing.beamit.model.ContactDetails;
@@ -48,6 +50,9 @@ import com.contactsharing.beamit.transport.BeamItServiceTransport;
 import com.contactsharing.beamit.utility.ApplicationConstants;
 import com.contactsharing.beamit.utility.BitmapUtility;
 import com.contactsharing.beamit.utility.UtilityMethods;
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.squareup.okhttp.ResponseBody;
 
 import java.io.IOException;
@@ -67,6 +72,9 @@ public class ContactListActivity extends AppCompatActivity {
     private static final int CONTACT_PICKER_RESULT = 1503;
     private SwipeRefreshLayout mSwipeRefreshLayout;
     private ImageButton FAB;
+    private TextView tvEmptyView;
+    private ViewSwitcher mVSContactList;
+
     private List<ContactDetails> mContacts;
     private DBHelper mDb;
 
@@ -79,12 +87,18 @@ public class ContactListActivity extends AppCompatActivity {
     private PendingIntent mPendingIntent;
     private IntentFilter[] mIntentFilters;
     private String[][] mNFCTechLists;
+    /**
+     * ATTENTION: This was auto-generated to implement the App Indexing API.
+     * See https://g.co/AppIndexing/AndroidStudio for more information.
+     */
+    private GoogleApiClient client;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_contact_list);
-
+        tvEmptyView = (TextView) findViewById(R.id.tv_empty_view);
+        mVSContactList = (ViewSwitcher) findViewById(R.id.switcher);
         //NFC related
         PackageManager pm = this.getPackageManager();
         // Check whether NFC is available on device
@@ -98,13 +112,12 @@ public class ContactListActivity extends AppCompatActivity {
             // Android Beam feature is not supported.
             Toast.makeText(this, "Android Beam is not supported.",
                     Toast.LENGTH_SHORT).show();
-        }
-        else {
+        } else {
             Log.d(TAG, "Android Beam is supported on this device");
         }
         mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
 
-        if(mNfcAdapter != null) {
+        if (mNfcAdapter != null) {
             Log.i(TAG, "Can read an NFC tag");
         } else {
             Log.e(TAG, "This phone is not NFC enabled");
@@ -118,12 +131,12 @@ public class ContactListActivity extends AppCompatActivity {
         IntentFilter ndefIntent = new IntentFilter(NfcAdapter.ACTION_NDEF_DISCOVERED);
         try {
             ndefIntent.addDataType("*/*");
-            mIntentFilters = new IntentFilter[] { ndefIntent };
+            mIntentFilters = new IntentFilter[]{ndefIntent};
         } catch (Exception e) {
             Log.e("TagDispatch", e.toString());
         }
 
-        mNFCTechLists = new String[][] { new String[] { NfcF.class.getName() } };
+        mNFCTechLists = new String[][]{new String[]{NfcF.class.getName()}};
 
         // Debug
 //        print2DStringArray(mNFCTechLists);
@@ -150,25 +163,6 @@ public class ContactListActivity extends AppCompatActivity {
             }
         });
 
-        //Swipe and dismiss
-        ItemTouchHelper.SimpleCallback simpleItemTouchCallback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT | ItemTouchHelper.RIGHT) {
-            @Override
-            public boolean onMove(RecyclerView recyclerView, RecyclerView.ViewHolder viewHolder, RecyclerView.ViewHolder target) {
-                return false;
-            }
-
-            @Override
-            public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
-                ContactNamesRecyclerViewAdapter.ContactDetailsViewHolder contactDetailsViewHolder = ( ContactNamesRecyclerViewAdapter.ContactDetailsViewHolder)viewHolder;
-                Log.d(TAG, String.format("Addapter position: %d, contactDetails: %s",
-                        viewHolder.getAdapterPosition(),
-                        contactDetailsViewHolder.contactDetails));
-                mContactNamesRecyclerViewAdapter.remove(contactDetailsViewHolder.contactDetails);
-            }
-        };
-
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(simpleItemTouchCallback);
-        itemTouchHelper.attachToRecyclerView(mRecyclerView);
 
         mSwipeRefreshLayout.setColorSchemeResources(R.color.orange, R.color.green, R.color.blue);
         mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
@@ -177,7 +171,6 @@ public class ContactListActivity extends AppCompatActivity {
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
-                        //TODO: fix it.
                         handleContactsDownloaded();
                         mSwipeRefreshLayout.setRefreshing(false);
 
@@ -186,6 +179,17 @@ public class ContactListActivity extends AppCompatActivity {
             }
         });
 
+        //If Recycler view is empty then display message.
+        if (mContactNamesRecyclerViewAdapter.getItemCount() > 0 ) {
+            if (R.id.activity_main_recyclerview == mVSContactList.getNextView().getId()) {
+                mVSContactList.showNext();
+            }
+        } else {
+            if (R.id.tv_empty_view== mVSContactList.getNextView().getId()) {
+                mVSContactList.showNext();
+            }
+        }
+
         FAB = (ImageButton) findViewById(R.id.imageButton);
         FAB.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -193,6 +197,13 @@ public class ContactListActivity extends AppCompatActivity {
                 shareContact();
             }
         });
+
+        //Set up toolbar
+        Toolbar toolbar = (Toolbar) findViewById(R.id.contact_list_toolbar);
+        setSupportActionBar(toolbar);
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
     }
 
     @Override
@@ -203,19 +214,29 @@ public class ContactListActivity extends AppCompatActivity {
         Log.d(TAG, String.format("onNewIntent() action: %s, tag: %s", action, tag.toString()));
         if (ACTION_NDEF_DISCOVERED.equals(action)) {
             handleNFCData(intent);
-        } else if(ACTION_REFRESH_CONTACTS.equals(action)){
+        } else if (ACTION_REFRESH_CONTACTS.equals(action)) {
             handleContactsDownloaded();
         } else {
             super.onNewIntent(intent);
         }
     }
 
-    private void handleContactsDownloaded(){
+    private void handleContactsDownloaded() {
         Log.d(TAG, "Updated contact list.");
         mContactNamesRecyclerViewAdapter.setContacts(mDb.readAllContacts());
+        //If Recycler view is empty then display message.
+        if (mContactNamesRecyclerViewAdapter.getItemCount() > 0 ) {
+            if (R.id.activity_main_recyclerview == mVSContactList.getNextView().getId()) {
+                mVSContactList.showNext();
+            }
+        } else {
+            if (R.id.tv_empty_view== mVSContactList.getNextView().getId()) {
+                mVSContactList.showNext();
+            }
+        }
     }
 
-    private void handleNFCData(Intent intent){
+    private void handleNFCData(Intent intent) {
         String receivedString = "";
         String s1 = "UTF-8";
         String s2 = "UTF-16";
@@ -225,12 +246,12 @@ public class ContactListActivity extends AppCompatActivity {
         if (data != null) {
             try {
                 for (int i = 0; i < data.length; i++) {
-                    NdefRecord[] recs = ((NdefMessage)data[i]).getRecords();
+                    NdefRecord[] recs = ((NdefMessage) data[i]).getRecords();
                     for (int j = 0; j < recs.length; j++) {
                         if (recs[j].getTnf() == NdefRecord.TNF_WELL_KNOWN &&
                                 Arrays.equals(recs[j].getType(), NdefRecord.RTD_TEXT)) {
                             byte[] payload = recs[j].getPayload();
-                            String textEncoding = ((payload[0] & 0200) == 0) ?  s1 : s2;
+                            String textEncoding = ((payload[0] & 0200) == 0) ? s1 : s2;
                             int langCodeLen = payload[0] & 0077;
                             receivedString = new String(payload, langCodeLen + 1, payload.length - langCodeLen - 1,
                                     textEncoding);
@@ -247,6 +268,7 @@ public class ContactListActivity extends AppCompatActivity {
         new DownloadSharedContactTask().execute(sharedContactId);
 
     }
+
     @Override
     public void onResume() {
         super.onResume();
@@ -255,6 +277,22 @@ public class ContactListActivity extends AppCompatActivity {
             mNfcAdapter.enableForegroundDispatch(this, mPendingIntent, mIntentFilters, mNFCTechLists);
         } else {
             Log.d(TAG, "mNFCAdapter is null");
+        }
+
+        // In case other activity has updated the contact list.
+        if (mContactNamesRecyclerViewAdapter != null) {
+            //Refresh contact list.
+            mContactNamesRecyclerViewAdapter.setContacts(mDb.readAllContacts());
+            //If Recycler view is empty then display message.
+            if (mContactNamesRecyclerViewAdapter.getItemCount() > 0 ) {
+                if (R.id.activity_main_recyclerview == mVSContactList.getNextView().getId()) {
+                    mVSContactList.showNext();
+                }
+            } else {
+                if (R.id.tv_empty_view== mVSContactList.getNextView().getId()) {
+                    mVSContactList.showNext();
+                }
+            }
         }
 
     }
@@ -268,7 +306,7 @@ public class ContactListActivity extends AppCompatActivity {
         }
     }
 
-    private void shareContact(){
+    private void shareContact() {
         if (mNfcAdapter == null) {
             Toast.makeText(this,
                     "Contact sharing will not work because device is not a NFC device",
@@ -287,7 +325,7 @@ public class ContactListActivity extends AppCompatActivity {
         Log.d(TAG, String.format("shareContact=> userId: %s", profile.getUserId()));
 
         NdefMessage ndefMessage = new NdefMessage(
-                new NdefRecord[] {
+                new NdefRecord[]{
                         createNewTextRecord(profile.getUserId().toString(),
                                 Locale.ENGLISH,
                                 true)
@@ -301,6 +339,7 @@ public class ContactListActivity extends AppCompatActivity {
 
     /**
      * This method creates the NdefRecord from the given string.
+     *
      * @param text
      * @param locale
      * @param encodeInUtf8
@@ -313,10 +352,10 @@ public class ContactListActivity extends AppCompatActivity {
         byte[] textBytes = text.getBytes(utfEncoding);
 
         int utfBit = encodeInUtf8 ? 0 : (1 << 7);
-        char status = (char)(utfBit + langBytes.length);
+        char status = (char) (utfBit + langBytes.length);
 
         byte[] data = new byte[1 + langBytes.length + textBytes.length];
-        data[0] = (byte)status;
+        data[0] = (byte) status;
         System.arraycopy(langBytes, 0, data, 1, langBytes.length);
         System.arraycopy(textBytes, 0, data, 1 + langBytes.length, textBytes.length);
 
@@ -375,9 +414,10 @@ public class ContactListActivity extends AppCompatActivity {
 
     /**
      * This method launches DisplayCardActivity.
+     *
      * @param contactDetails
      */
-    private void showContactDetails(ContactDetails contactDetails){
+    private void showContactDetails(ContactDetails contactDetails) {
         Log.d(TAG, String.format("showContactDetails() contactDetails: %s", contactDetails.toString()));
         Intent intent = new Intent(this, DisplayCardActivity.class);
         intent.putExtra(ApplicationConstants.EXTRA_CONTACT_LOCAL_ID,
@@ -407,21 +447,31 @@ public class ContactListActivity extends AppCompatActivity {
 
     /**
      * This is a helper method to save the contact in contact list.
-     *
      */
     private void saveNewContact(ContactDetails contactDetails) {
-        if(contactDetails.getOwnerId() == null) {
+        if (contactDetails.getOwnerId() == null) {
             ProfileDetails profile = mDb.fetchProfileDetails();
             contactDetails.setOwnerId(profile.getUserId());
         }
 
-        if ( mContactNamesRecyclerViewAdapter.add(contactDetails)) {
+        if (mContactNamesRecyclerViewAdapter.add(contactDetails)) {
             //Notify user.
             Toast.makeText(this, "Contact added successfully", Toast.LENGTH_SHORT).show();
             Log.i(TAG, "Contact added successfully");
         } else {
             Toast.makeText(this, "Couldn't add contact", Toast.LENGTH_SHORT).show();
             Log.e(TAG, "Couldn't add contact");
+        }
+
+        //If Recycler view is empty then display message.
+        if (mContactNamesRecyclerViewAdapter.getItemCount() > 0 ) {
+            if (R.id.activity_main_recyclerview == mVSContactList.getNextView().getId()) {
+                mVSContactList.showNext();
+            }
+        } else {
+            if (R.id.tv_empty_view== mVSContactList.getNextView().getId()) {
+                mVSContactList.showNext();
+            }
         }
     }
 
@@ -431,12 +481,12 @@ public class ContactListActivity extends AppCompatActivity {
         getMenuInflater().inflate(R.menu.menu_contact_list, menu);
 
         // Associate searchable configuration with the SearchView
-        SearchManager searchManager =
-                (SearchManager) getSystemService(Context.SEARCH_SERVICE);
-        SearchView searchView =
-                (SearchView) menu.findItem(R.id.search).getActionView();
-        searchView.setSearchableInfo(
-                searchManager.getSearchableInfo(getComponentName()));
+//        SearchManager searchManager =
+//                (SearchManager) getSystemService(Context.SEARCH_SERVICE);
+//        SearchView searchView =
+//                (SearchView) menu.findItem(R.id.search).getActionView();
+//        searchView.setSearchableInfo(
+//                searchManager.getSearchableInfo(getComponentName()));
         return true;
     }
 
@@ -447,11 +497,16 @@ public class ContactListActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
-        switch(id){
+        switch (id) {
 
             case R.id.action_invite:
                 launchInviteActivity();
                 return true;
+
+            case R.id.action_share_contact:
+                shareContact();
+                return true;
+
             case R.id.action_import_contact:
                 importContact();
                 return true;
@@ -467,6 +522,7 @@ public class ContactListActivity extends AppCompatActivity {
             case R.id.action_delete_account:
                 deleteAccount();
                 return true;
+
             case R.id.action_settings:
                 // TODO: Need to handle settings.
                 return true;
@@ -478,9 +534,9 @@ public class ContactListActivity extends AppCompatActivity {
                 finish();
                 return true;
 
-            case R.id.action_test:
-                startActivity(new Intent(this, TestActivity.class));
-                return true;
+//            case R.id.action_test:
+//                startActivity(new Intent(this, TestActivity.class));
+//                return true;
 
             default:
                 return super.onOptionsItemSelected(item);
@@ -503,7 +559,7 @@ public class ContactListActivity extends AppCompatActivity {
                 .show();
     }
 
-    private void launchEditProfileActivity(){
+    private void launchEditProfileActivity() {
         startActivity(new Intent(this, EditProfileActivity.class));
     }
 
@@ -511,20 +567,20 @@ public class ContactListActivity extends AppCompatActivity {
         startActivity(new Intent(this, ChangePasswordActivity.class));
     }
 
-    private void launchInviteActivity(){
+    private void launchInviteActivity() {
         startActivity(new Intent(this, InviteActivity.class));
     }
 
     /**
      * Helper method for debugging to print 2d string array.
+     *
      * @param values
      */
-    private void print2DStringArray(String[][] values){
+    private void print2DStringArray(String[][] values) {
         StringBuilder result = new StringBuilder();
         String separator = ",";
 
-        for (int i = 0; i < values.length; ++i)
-        {
+        for (int i = 0; i < values.length; ++i) {
             result.append('[');
             for (int j = 0; j < values[i].length; ++j) {
                 if (j > 0)
@@ -537,10 +593,50 @@ public class ContactListActivity extends AppCompatActivity {
         Log.d(TAG, String.format("2DString=> %s", result));
     }
 
+    @Override
+    public void onStart() {
+        super.onStart();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        client.connect();
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "ContactList Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.contactsharing.beamit/http/host/path")
+        );
+        AppIndex.AppIndexApi.start(client, viewAction);
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        // ATTENTION: This was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
+        Action viewAction = Action.newAction(
+                Action.TYPE_VIEW, // TODO: choose an action type.
+                "ContactList Page", // TODO: Define a title for the content shown.
+                // TODO: If you have web page content that matches this app activity's content,
+                // make sure this auto-generated web page URL is correct.
+                // Otherwise, set the URL to null.
+                Uri.parse("http://host/path"),
+                // TODO: Make sure this auto-generated app deep link URI is correct.
+                Uri.parse("android-app://com.contactsharing.beamit/http/host/path")
+        );
+        AppIndex.AppIndexApi.end(client, viewAction);
+        client.disconnect();
+    }
+
     /**
      * Async task to download contacts
      */
-    private class DownloadSharedContactTask extends AsyncTask<Integer, Integer, ContactDetails>{
+    private class DownloadSharedContactTask extends AsyncTask<Integer, Integer, ContactDetails> {
 
         @Override
         protected ContactDetails doInBackground(Integer... integers) {
@@ -558,7 +654,7 @@ public class ContactListActivity extends AppCompatActivity {
                 Log.e(TAG, "Error while fetching contact", e);
                 return null;
             }
-            if (contactResponse.code() != HttpURLConnection.HTTP_CREATED){
+            if (contactResponse.code() != HttpURLConnection.HTTP_CREATED) {
                 Log.i(TAG, String.format("Couldn't get contact details => code: %d, response: %s",
                         contactResponse.code(),
                         contactResponse.body()));
@@ -572,16 +668,16 @@ public class ContactListActivity extends AppCompatActivity {
             Response<ResponseBody> response = null;
             try {
                 response = responseCall.execute();
-            } catch(IOException e){
-                Log.e(TAG, "Coudln't get contact photo ",e);
+            } catch (IOException e) {
+                Log.e(TAG, "Coudln't get contact photo ", e);
             }
-            if (response == null || response.code() != HttpURLConnection.HTTP_OK){
+            if (response == null || response.code() != HttpURLConnection.HTTP_OK) {
                 Log.i(TAG, String.format("Coudln't get contact photo => code: %d", response.code()));
             } else {
 
                 try {
-                    Bitmap bitmap =  BitmapUtility.getBytesToBitmap(response.body().bytes());
-                    if (bitmap != null){
+                    Bitmap bitmap = BitmapUtility.getBytesToBitmap(response.body().bytes());
+                    if (bitmap != null) {
                         Log.d(TAG, "bitmap is not null");
                     } else {
                         Log.e(TAG, "bitmap is null");
@@ -606,21 +702,21 @@ public class ContactListActivity extends AppCompatActivity {
         }
 
         @Override
-        protected void onPostExecute(ContactDetails contactDetails){
+        protected void onPostExecute(ContactDetails contactDetails) {
             if (contactDetails != null) {
                 saveNewContact(contactDetails);
             }
         }
     }
 
-    private class DeleteUserProfile extends AsyncTask<Void, Integer, Boolean>{
+    private class DeleteUserProfile extends AsyncTask<Void, Integer, Boolean> {
 
         @Override
         protected Boolean doInBackground(Void... voids) {
             DBHelper db = new DBHelper(getApplicationContext());
             ProfileDetails profile = db.fetchProfileDetails();
 
-            if (profile != null){
+            if (profile != null) {
                 BeamItService service = BeamItServiceTransport.getService();
                 Call<ResponseBody> call = service.deleteUserProfile(profile.getUserId());
                 Response<ResponseBody> response;
@@ -637,8 +733,8 @@ public class ContactListActivity extends AppCompatActivity {
         }
 
         @Override
-        protected  void onPostExecute(Boolean result){
-            if(result){
+        protected void onPostExecute(Boolean result) {
+            if (result) {
                 Toast.makeText(getApplicationContext(), "Successfully deleted account", Toast.LENGTH_SHORT).show();
                 Intent intent = new Intent(getApplicationContext(), SigninActivity.class);
                 intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);

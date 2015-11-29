@@ -1,12 +1,20 @@
 package com.contactsharing.beamit;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -14,7 +22,9 @@ import android.widget.Toast;
 
 import com.contactsharing.beamit.db.DBHelper;
 import com.contactsharing.beamit.model.ContactDetails;
+import com.contactsharing.beamit.services.DeleteContactService;
 import com.contactsharing.beamit.utility.ApplicationConstants;
+import com.squareup.okhttp.internal.framed.FrameReader;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -22,13 +32,14 @@ import java.io.File;
 /**
  * Created by kumari on 9/15/15.
  */
-public class DisplayCardActivity extends Activity {
+public class DisplayCardActivity extends AppCompatActivity {
     public final static String TAG = DisplayCardActivity.class.getSimpleName();
     private TextView tvName;
     private TextView tvPhone;
     private TextView tvEmail;
     private ImageView ivContactPhoto;
     private TextView tvLinkedinUrl;
+    private ContactDetails mContactDetails;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,7 +60,45 @@ public class DisplayCardActivity extends Activity {
             Log.e(TAG, "Couldn't fetch the right id from intent");
         }
 
+        // Set up toolbar
+        setSupportActionBar((Toolbar)findViewById(R.id.display_card_toolbar));
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+        getMenuInflater().inflate(R.menu.menu_display_card, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item){
+
+        int id = item.getItemId();
+
+        switch(id){
+
+            case R.id.action_delete_contact:
+
+                new AlertDialog.Builder(this)
+                        .setTitle("Delete Contact ")
+                        .setMessage(String.format("Do you really want to delete %s's contact details?", mContactDetails.getName()))
+                        .setIcon(android.R.drawable.ic_dialog_alert)
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                deleteContactDetails(mContactDetails);
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, null)
+                        .show();
+
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+
 
     public void onClick(View view){
         switch(view.getId()){
@@ -66,6 +115,12 @@ public class DisplayCardActivity extends Activity {
                 Log.e(TAG, String.format("Wrong view id (%d) passed in onClick() method",
                         view.getId()));
         }
+    }
+
+    private void deleteContactDetails(final ContactDetails contactDetails) {
+        DeleteContactService.deleteContact(getApplicationContext(), contactDetails.getId());
+        DelayHandler dh = new DelayHandler(this);
+        dh.sendEmptyMessageDelayed(0, 1000);
     }
 
     /**
@@ -132,7 +187,9 @@ public class DisplayCardActivity extends Activity {
 
         @Override
         protected void onPostExecute(ContactDetails contactDetails){
+
             if (contactDetails != null) {
+                mContactDetails = contactDetails;
                 tvName.setText(contactDetails.getName());
                 tvPhone.setText(contactDetails.getPhone());
                 if (contactDetails.getEmail() != null) {
@@ -150,6 +207,18 @@ public class DisplayCardActivity extends Activity {
                     tvLinkedinUrl.setText(contactDetails.getLinkedinUrl());
                 }
             }
+        }
+    }
+
+    class DelayHandler extends Handler {
+        private Activity activity;
+
+        public DelayHandler(Activity activity){
+            this.activity = activity;
+        }
+        @Override
+        public void handleMessage(Message msg){
+            this.activity.finish();
         }
     }
 }
