@@ -2,6 +2,8 @@ package com.contactsharing.beamit;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ContentProviderOperation;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -10,6 +12,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.provider.ContactsContract;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -28,6 +31,7 @@ import com.squareup.okhttp.internal.framed.FrameReader;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
+import java.util.ArrayList;
 
 /**
  * Created by kumari on 9/15/15.
@@ -93,11 +97,82 @@ public class DisplayCardActivity extends AppCompatActivity {
                         .show();
 
                 return true;
+
+            case R.id.action_export_contact:
+
+                new AlertDialog.Builder(this)
+                        .setTitle("Export Contact")
+                        .setMessage(String.format("Do you want to export %s's contact to system contact list",mContactDetails.getName()))
+                        .setIcon(R.drawable.ic_export_contact)
+                        .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                exportContact(mContactDetails);
+                            }
+                        })
+                        .setNegativeButton(android.R.string.no, null)
+                        .show();
+
+                return true;
+
             default:
                 return super.onOptionsItemSelected(item);
         }
     }
 
+    /**
+     * This method export the given contact to Android contact list.
+     * @param contactDetails
+     */
+    private void exportContact(ContactDetails contactDetails) {
+
+        if (contactDetails == null) {
+            Log.e(TAG, "Contact details not found, not doing anything.");
+        }
+        ArrayList<ContentValues> data = new ArrayList<>();
+
+        if (!contactDetails.getName().isEmpty()) {
+            ContentValues rowName = new ContentValues();
+            rowName.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Nickname.CONTENT_ITEM_TYPE);
+            rowName.put(ContactsContract.CommonDataKinds.Nickname.DISPLAY_NAME, contactDetails.getName());
+            data.add(rowName);
+        }
+        if (!contactDetails.getCompany().isEmpty()) {
+            ContentValues rowCompany = new ContentValues();
+            rowCompany.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Organization.CONTENT_ITEM_TYPE);
+            rowCompany.put(ContactsContract.CommonDataKinds.Organization.COMPANY, contactDetails.getCompany());
+            data.add(rowCompany);
+
+        }
+
+        if (!contactDetails.getPhone().isEmpty()) {
+            ContentValues rowPhone = new ContentValues();
+            rowPhone.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Phone.CONTENT_ITEM_TYPE);
+            rowPhone.put(ContactsContract.CommonDataKinds.Phone.NUMBER, contactDetails.getPhone());
+            data.add(rowPhone);
+        }
+
+        if (!contactDetails.getLinkedinUrl().isEmpty()) {
+            ContentValues rowLinkedin = new ContentValues();
+            rowLinkedin.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Website.CONTENT_ITEM_TYPE);
+            rowLinkedin.put(ContactsContract.CommonDataKinds.Website.TYPE, ContactsContract.CommonDataKinds.Website.TYPE_PROFILE);
+            rowLinkedin.put(ContactsContract.CommonDataKinds.Website.URL, contactDetails.getLinkedinUrl());
+            data.add(rowLinkedin);
+        }
+
+        ContentValues rowEmail = new ContentValues();
+        rowEmail.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
+        rowEmail.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_WORK);
+        rowEmail.put(ContactsContract.CommonDataKinds.Email.ADDRESS, contactDetails.getEmail());
+        data.add(rowEmail);
+
+        Intent intent = new Intent(Intent.ACTION_INSERT, ContactsContract.Contacts.CONTENT_URI);
+        intent.putParcelableArrayListExtra(ContactsContract.Intents.Insert.DATA, data);
+        intent.putExtra(ContactsContract.Intents.Insert.NAME, contactDetails.getName());
+
+        startActivity(intent);
+
+    }
 
 
     public void onClick(View view){

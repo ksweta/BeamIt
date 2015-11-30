@@ -54,4 +54,5 @@
     </string>
     <string name="delete_contact">Delete contact</string>
     <string name="share_contact">Share contact</string>
+    <string name="export_contact">Export contact</string>
 </resources>
