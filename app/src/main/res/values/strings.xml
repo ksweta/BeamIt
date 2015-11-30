@@ -23,7 +23,7 @@
     <string name="linkedin_import">Linkedin import</string>
     <string name="title_activity_create_business_card">Create business card</string>
     <string name="title_activity_display_card">Contact details</string>
-    <string name="action_edit_profile">Edit profile</string>
+    <string name="action_edit_profile">Create business card</string>
     <string name="action_logout">Logout</string>
     <string name="email_or_phone">Email or Phone</string>
     <string name="invite">Invite</string>

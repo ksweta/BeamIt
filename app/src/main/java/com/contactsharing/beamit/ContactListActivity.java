@@ -507,9 +507,9 @@ public class ContactListActivity extends AppCompatActivity {
                 shareContact();
                 return true;
 
-            case R.id.action_import_contact:
-                importContact();
-                return true;
+//            case R.id.action_import_contact:
+//                importContact();
+//                return true;
 
             case R.id.action_edit_profile:
                 launchEditProfileActivity();
