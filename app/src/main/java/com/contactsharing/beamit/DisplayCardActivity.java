@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -27,6 +28,7 @@ import com.contactsharing.beamit.db.DBHelper;
 import com.contactsharing.beamit.model.ContactDetails;
 import com.contactsharing.beamit.services.DeleteContactService;
 import com.contactsharing.beamit.utility.ApplicationConstants;
+import com.contactsharing.beamit.utility.BitmapUtility;
 import com.squareup.okhttp.internal.framed.FrameReader;
 import com.squareup.picasso.Picasso;
 
@@ -160,6 +162,15 @@ public class DisplayCardActivity extends AppCompatActivity {
             data.add(rowLinkedin);
         }
 
+        if (!contactDetails.getPhotoUri().isEmpty()) {
+            ContentValues rowPhoto = new ContentValues();
+            rowPhoto.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Photo.CONTENT_ITEM_TYPE);
+
+            rowPhoto.put(ContactsContract.CommonDataKinds.Photo.PHOTO,
+                    BitmapUtility.getBitmapToBytes(((BitmapDrawable) ivContactPhoto.getDrawable()).getBitmap()));
+            data.add(rowPhoto);
+        }
+
         ContentValues rowEmail = new ContentValues();
         rowEmail.put(ContactsContract.Data.MIMETYPE, ContactsContract.CommonDataKinds.Email.CONTENT_ITEM_TYPE);
         rowEmail.put(ContactsContract.CommonDataKinds.Email.TYPE, ContactsContract.CommonDataKinds.Email.TYPE_WORK);
@@ -168,8 +179,10 @@ public class DisplayCardActivity extends AppCompatActivity {
 
         Intent intent = new Intent(Intent.ACTION_INSERT, ContactsContract.Contacts.CONTENT_URI);
         intent.putParcelableArrayListExtra(ContactsContract.Intents.Insert.DATA, data);
-        intent.putExtra(ContactsContract.Intents.Insert.NAME, contactDetails.getName());
 
+        if (!contactDetails.getName().isEmpty()) {
+            intent.putExtra(ContactsContract.Intents.Insert.NAME, contactDetails.getName());
+        }
         startActivity(intent);
 
     }
