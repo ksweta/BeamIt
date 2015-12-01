@@ -21,6 +21,7 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.Parcelable;
 import android.provider.ContactsContract;
+import android.provider.Settings;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -307,10 +308,31 @@ public class ContactListActivity extends AppCompatActivity {
     }
 
     private void shareContact() {
-        if (mNfcAdapter == null) {
-            Toast.makeText(this,
-                    "Contact sharing will not work because device is not a NFC device",
-                    Toast.LENGTH_SHORT).show();
+
+
+        if (mNfcAdapter == null || !UtilityMethods.isNFCEnabled(this)) {
+
+            new AlertDialog.Builder(this)
+                    .setTitle("NFC status")
+                    .setIcon(R.drawable.ic_nfc)
+                    .setMessage("NFC is disabled on your device. Please enable it")
+                    .setPositiveButton(android.R.string.ok,
+                            new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.GINGERBREAD) {
+                                        Intent intent = new Intent(Settings.ACTION_WIRELESS_SETTINGS);
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        getApplicationContext().startActivity(intent);
+                                    } else {
+                                        Intent intent = new Intent(Settings.ACTION_NFC_SETTINGS);
+                                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                                        getApplicationContext().startActivity(intent);
+                                    }
+                                }
+                            })
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .show();
             return;
         }
 

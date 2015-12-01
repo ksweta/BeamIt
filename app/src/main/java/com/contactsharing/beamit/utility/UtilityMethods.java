@@ -2,6 +2,8 @@ package com.contactsharing.beamit.utility;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.nfc.NfcAdapter;
+import android.nfc.NfcManager;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
@@ -57,7 +59,6 @@ public class UtilityMethods {
         return requestBody;
     }
 
-
     public static String photoFileNameFormatter(String prefix, String extension, Integer id){
 
         if(id != null){
@@ -70,4 +71,19 @@ public class UtilityMethods {
     public static String photoFilePath(String photoDirectory, String filename){
         return String.format("%s/%s", photoDirectory, filename);
     }
+
+    /**
+     * Determine NFC is enabled or not.
+     * @param context
+     * @return true if NFC is enabled otherwise false.
+     */
+    public static boolean isNFCEnabled(Context context){
+        NfcAdapter nfcAdapter = ((NfcManager)context.getSystemService(Context.NFC_SERVICE)).getDefaultAdapter();
+        if (nfcAdapter != null && nfcAdapter.isEnabled()) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
 }
