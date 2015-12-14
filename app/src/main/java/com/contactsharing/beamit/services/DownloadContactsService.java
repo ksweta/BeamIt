@@ -75,7 +75,7 @@ public class DownloadContactsService extends IntentService {
         Response<ContactList> contactListResponse = null;
 
         try {
-            contactListResponse = call.execute();
+            contactListResponse = call.execute();   //synchronous call of retrofit
         } catch (IOException ex){
             Log.e(TAG, String.format("Couldn't fetch user's(%d) contact list", userId), ex);
             return null;

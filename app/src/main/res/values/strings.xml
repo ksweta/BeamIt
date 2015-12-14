@@ -56,4 +56,5 @@
     <string name="share_contact">Share contact</string>
     <string name="export_contact">Export contact</string>
     <string name="invite_message">Invite your friend to the app!</string>
+    <string name="app_intro">Create and manage your\n business card</string>
 </resources>

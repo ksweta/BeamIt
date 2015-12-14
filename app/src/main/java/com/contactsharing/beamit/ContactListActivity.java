@@ -315,7 +315,7 @@ public class ContactListActivity extends AppCompatActivity {
             new AlertDialog.Builder(this)
                     .setTitle("NFC status")
                     .setIcon(R.drawable.ic_nfc)
-                    .setMessage("NFC is disabled on your device. Please enable it")
+                    .setMessage("NFC is disabled on your device. Please enable it to exchange cards")
                     .setPositiveButton(android.R.string.ok,
                             new DialogInterface.OnClickListener() {
                                 @Override

@@ -71,7 +71,7 @@ public class SignUpActivity extends Activity {
         Call<SignupResponse> call = service.signup(signupRequest);
         ProfileDetails profileDetails = new ProfileDetails();
         profileDetails.setEmail(email);
-        call.enqueue(new SignupCallback(profileDetails));
+        call.enqueue(new SignupCallback(profileDetails));   // asynchronous call of retrofit
     }
 
     private class SignupCallback implements Callback<SignupResponse> {
