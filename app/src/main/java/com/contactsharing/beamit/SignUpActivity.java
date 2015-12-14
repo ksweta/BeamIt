@@ -61,6 +61,7 @@ public class SignUpActivity extends Activity {
         if (db.updateProfile(profileDetails) > 0) {
             Toast.makeText(this, "Profile updated successfully", Toast.LENGTH_SHORT).show();
         }
+        db.close();
     }
     private void signup() {
         String email = etEmail.getText().toString();
@@ -72,6 +73,12 @@ public class SignUpActivity extends Activity {
         ProfileDetails profileDetails = new ProfileDetails();
         profileDetails.setEmail(email);
         call.enqueue(new SignupCallback(profileDetails));   // asynchronous call of retrofit
+    }
+
+    private void deleteOldContacts(Integer userId){
+        DBHelper db = new DBHelper(this);
+        db.deleteContactWithoutCurrentOwner(userId);
+        db.close();
     }
 
     private class SignupCallback implements Callback<SignupResponse> {
@@ -90,6 +97,8 @@ public class SignUpActivity extends Activity {
             if (response.code() == HttpURLConnection.HTTP_CREATED) {
                 SignupResponse signupResponse = response.body();
                 profileDetails.setUserId(signupResponse.getUserId());
+                // Delete other user's contacts.
+                deleteOldContacts(signupResponse.getUserId());
                 //Save the user id first.
                 saveProfileDetails(profileDetails);
                 goToContactListActivit();
